@@ -23,7 +23,7 @@ hash_func(int key){
 	return key%HASH_SIZE;
 }
 struct List{
-	struct ListItem * head;
+	struct ListItem * head,*tail;
 	unsigned minTimeout;
 	unsigned times;
 	int numItem;
@@ -134,6 +134,7 @@ static void
 listInit(struct List *list)
 {
 	list->head = NULL;
+	list->tail = NULL;
 	list->numItem = 0;
 	list->times = 0;
 	list->minTimeout = -1;
@@ -170,11 +171,12 @@ listRealInsert(struct List *list,struct ListItem*item)
 {
 	if(!list->head){
 		list->head = item;
+		list->tail = item;
 		return;
 	}
 	struct ListItem *cut = list->head;
 	while(1){
-		if(cut->ety.timeout > item->ety.timeout){
+		if(cut->ety.timeout > item->ety.timeout){//
 			if(!cut->pre){
 				list->head = item;
 			}else{
@@ -188,6 +190,7 @@ listRealInsert(struct List *list,struct ListItem*item)
 		if(!cut->next){
 			cut->next = item;
 			item->pre = cut;
+			list->tail = item;
 			break;
 		}
 		cut = cut->next;
@@ -202,6 +205,8 @@ listRemove(struct List *list,struct ListItem * litem)
 		list->head = litem->next;
 		if(list->head)list->minTimeout = list->head->ety.timeout;
 		else list->minTimeout = -1;
+	}else if(litem == list->tail){
+		list->tail = litem->pre;
 	}
 	listItemSub(list);
 	free(litem);
