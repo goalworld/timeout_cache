@@ -53,12 +53,14 @@ listItemSub(struct List *list){
 }
 
 static void listInit(struct List *list);
+static void listDestroy(struct List *list);
 static struct ListItem * listInsert(struct List *list,int key,struct UserData data,unsigned timeout);
 static void listRealInsert(struct List *list,struct ListItem*item);
 static void listRemove(struct List *list,struct ListItem * litem);
 static void listRemoveByTimeout(struct ToEntryTable *tet,unsigned timeout);
 
 static void hashInit(struct HashMap *hmap);
+static void hashDestroy(struct HashMap *hmap);
 static void hashInsert( struct HashMap *hmap,int key,struct ListItem *item );
 static struct ListItem * hashQuery(struct HashMap *hmap, int key );
 static struct ListItem * hashRemove( struct HashMap *hmap,int key );
@@ -71,6 +73,13 @@ TET_new()
 	listInit(&p->list);
 	hashInit(&p->hmap);
 	return p;
+}
+void 
+TET_del(struct ToEntryTable *txt)
+{
+	listDestroy(&txt->list);
+	hashDestroy(&txt->hmap);
+	free(txt);
 }
 void 
 TET_onTimer(struct ToEntryTable *tet,unsigned times){
@@ -129,7 +138,16 @@ listInit(struct List *list)
 	list->times = 0;
 	list->minTimeout = -1;
 }
-
+static void 
+listDestroy(struct List *list)
+{
+	struct ListItem *next,*cut = list->head;
+	while(cut){
+		next = cut->next;
+		free(cut);
+		cut = next;
+	}
+}
 static struct ListItem *
 listInsert(struct List *list,int key,struct UserData data,unsigned timeout)
 {
@@ -207,6 +225,21 @@ static void
 hashInit(struct HashMap *hmap)
 {
 	memset(hmap->items,0,HASH_SIZE*sizeof(struct HashItem*));
+}
+static void 
+hashDestroy(struct HashMap *hmap)
+{
+	int i = 0;
+	struct HashItem *next,*cut;
+	for( ;i<HASH_SIZE;i++){
+		cut = hmap->items[i];
+		while(cut){
+			next = cut->next;
+			free(cut);
+			cut = next;
+		}
+	}
+	
 }
 static void
 hashInsert( struct HashMap *hmap,int key,struct ListItem *item )
