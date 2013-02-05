@@ -1,8 +1,14 @@
 #ifndef _ENTRY_MAP_TIMEOUT_H_
 #define _ENTRY_MAP_TIMEOUT_H_
 struct ToEntryTable;
-struct ToEntryTable *ToEnterTableNew();
-int  insertEntry(struct ToEntryTable* tet, int key,void* data,unsigned  timeout);
-void *removeEntry(struct ToEntryTable* tet ,int key);
-void * queryEntry(struct ToEntryTable* tet ,int key);
+
+struct UserData{
+	void* data;
+	unsigned sz;
+};
+struct ToEntryTable *TET_new();
+int TET_insertEntry(struct ToEntryTable* tet, int key,struct UserData data,unsigned  timeout);
+int TET_removeEntry(struct ToEntryTable* tet ,int key,struct UserData *data);
+int TET_queryEntry(struct ToEntryTable* tet ,int key,struct UserData *data);
+void TET_onTimer(struct ToEntryTable *tet,unsigned times);
 #endif

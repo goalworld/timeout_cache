@@ -1,9 +1,10 @@
 #include "entrymaptimeout.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
 #define HASH_SIZE 10240
 struct Entry{
-	void *data;
+	struct UserData data;
 	int key;
 	unsigned timeout;
 };
@@ -22,7 +23,7 @@ hash_func(int key){
 	return key%HASH_SIZE;
 }
 struct List{
-	struct ListItem * head,*tail;
+	struct ListItem * head;
 	unsigned minTimeout;
 	unsigned times;
 	int numItem;
@@ -52,7 +53,7 @@ listItemSub(struct List *list){
 }
 
 static void listInit(struct List *list);
-static struct ListItem * listInsert(struct List *list,int key,void* data,unsigned timeout);
+static struct ListItem * listInsert(struct List *list,int key,struct UserData data,unsigned timeout);
 static void listRealInsert(struct List *list,struct ListItem*item);
 static void listRemove(struct List *list,struct ListItem * litem);
 static void listRemoveByTimeout(struct ToEntryTable *tet,unsigned timeout);
@@ -63,24 +64,28 @@ static struct ListItem * hashQuery(struct HashMap *hmap, int key );
 static struct ListItem * hashRemove( struct HashMap *hmap,int key );
 
 
-struct ToEntryTable * ToEnterTableNew()
+struct ToEntryTable * 
+TET_new()
 {
-	struct ToEntryTable *p = malloc(sizeof(struct ToEntryTable));
+	struct ToEntryTable *p = (struct ToEntryTable *)malloc(sizeof(struct ToEntryTable));
 	listInit(&p->list);
 	hashInit(&p->hmap);
 	return p;
 }
-static void
-_onTimer(struct ToEntryTable *tet){
+void 
+TET_onTimer(struct ToEntryTable *tet,unsigned times){
 	if( tet->list.numItem > 0 ){
-		tet->list.times++;
+		tet->list.times+=times;
+		printf("cut times %d : min timeout%d numitem:%d\n",tet->list.times,tet->list.minTimeout,tet->list.numItem);
 		if(tet->list.times >= tet->list.minTimeout){
 			listRemoveByTimeout(tet,tet->list.times);
+			if(tet->list.head)
+				tet->list.minTimeout = tet->list.head->ety.timeout;
 		}
 	}
 }
 int
-insertEntry(struct ToEntryTable* tet, int key,void* data,unsigned timeout)
+TET_insertEntry(struct ToEntryTable* tet, int key,struct UserData data,unsigned timeout)
 {
 	if(hashQuery(&tet->hmap,key)){
 		return -1;
@@ -89,23 +94,26 @@ insertEntry(struct ToEntryTable* tet, int key,void* data,unsigned timeout)
 	hashInsert(&tet->hmap,key,item);
 	return 0;
 }
-void *
-removeEntry(struct ToEntryTable* tet ,int key)
+int
+TET_removeEntry(struct ToEntryTable* tet ,int key,struct UserData *data)
 {
 	struct ListItem * item = hashRemove(&tet->hmap,key);
 	if(item){
-		void * data = item->ety.data;
+		*data = item->ety.data;
 		listRemove(&tet->list,item);
-		return data;
+		return 0;
 	}
-	return NULL;
+	return -1;
 }
-void *
-queryEntry(struct ToEntryTable* tet ,int key)
+int
+TET_queryEntry(struct ToEntryTable* tet ,int key,struct UserData *data)
 {
 	struct ListItem * item = hashQuery(&tet->hmap,key);
-	void * data = item->ety.data;
-	return data;
+	if(item){
+		*data = item->ety.data;
+		return 0;
+	}
+	return -1;
 }
 
 static void
@@ -117,14 +125,13 @@ static void
 listInit(struct List *list)
 {
 	list->head = NULL;
-	list->tail = NULL;
 	list->numItem = 0;
 	list->times = 0;
 	list->minTimeout = -1;
 }
 
 static struct ListItem *
-listInsert(struct List *list,int key,void* data,unsigned timeout)
+listInsert(struct List *list,int key,struct UserData data,unsigned timeout)
 {
 
 	struct ListItem *p = malloc(sizeof(struct ListItem));
@@ -145,11 +152,10 @@ listRealInsert(struct List *list,struct ListItem*item)
 {
 	if(!list->head){
 		list->head = item;
-		list->tail = item;
 		return;
 	}
 	struct ListItem *cut = list->head;
-	while(cut){
+	while(1){
 		if(cut->ety.timeout > item->ety.timeout){
 			if(!cut->pre){
 				list->head = item;
@@ -159,6 +165,11 @@ listRealInsert(struct List *list,struct ListItem*item)
 			}
 			item->next = cut;
 			cut->pre = item;
+			break;
+		}
+		if(!cut->next){
+			cut->next = item;
+			item->pre = cut;
 			break;
 		}
 		cut = cut->next;
@@ -173,8 +184,6 @@ listRemove(struct List *list,struct ListItem * litem)
 		list->head = litem->next;
 		if(list->head)list->minTimeout = list->head->ety.timeout;
 		else list->minTimeout = -1;
-	}else if(litem == list->tail){
-		list->tail = litem->pre;
 	}
 	listItemSub(list);
 	free(litem);
@@ -183,17 +192,14 @@ listRemove(struct List *list,struct ListItem * litem)
 static void
 listRemoveByTimeout(struct ToEntryTable *tet,unsigned timeout)
 {
-	for(;;){
-		if( tet->list.head->ety.timeout <= timeout){
-			struct ListItem *tmp = tet->list.head;
-			tet->list.head = tmp->next;
-			listItemSub(&tet->list);
-			notifyListItemRemove(tet,tmp->ety);
-			free(tmp);
-			if( !tet->list.head ){
-				tet->list.tail = NULL;
-				break;
-			}
+	while( tet->list.head->ety.timeout <= timeout ){
+		struct ListItem *tmp = tet->list.head;
+		tet->list.head = tmp->next;
+		listItemSub(&tet->list);
+		notifyListItemRemove(tet,tmp->ety);
+		free(tmp);
+		if( !tet->list.head ){
+			break;
 		}
 	}
 }
@@ -206,11 +212,10 @@ static void
 hashInsert( struct HashMap *hmap,int key,struct ListItem *item )
 {
 	int hash = hash_func(key);
-	struct HashItem * hitem = malloc(sizeof(struct HashItem));
+	struct HashItem * hitem = (struct HashItem *)malloc(sizeof(struct HashItem));
 	hitem->host = item;
 	struct HashItem **pp = &hmap->items[hash];
-	struct HashItem *p =*pp;
-	hitem->next = p;
+	hitem->next = *pp;
 	*pp = hitem;
 }
 static struct ListItem *
@@ -230,7 +235,7 @@ static struct ListItem *
 hashRemove( struct HashMap *hmap,int key )
 {
 	int hash = hash_func(key);
-	struct HashItem *pre,*cut = hmap->items[hash];
+	struct HashItem *pre = NULL,*cut = hmap->items[hash];
 	while(cut){
 		if(cut->host->ety.key == key){
 			if(pre){

@@ -1,6 +1,6 @@
 CC = gcc
 SRCS = ./test.c ./entrymaptimout.c
 DEBUG=-g
-CFALGS = -O3
+CFALGS = 
 test:$(SRCS)
 	$(CC) $(DEBUG) $(CFALGS) -o $@ $^ 
