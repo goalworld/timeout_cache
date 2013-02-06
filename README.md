@@ -20,9 +20,14 @@ timeout_cache
 1：对timeout 使用插入排序。
 2：key->listnode 外部查询，删除。
 
+跳跃表+hash （之后实现）
+1：使用timeout建立跳跃表。
+2：key-> treenode 外部查询
+
 树+hash （之后实现）
 1：使用timeout建立二叉树。
 2：key-> treenode 外部查询
+
 双hash（之后实现）
 1：key -> item 外部查询 删除 用。
 2：timeout->item 内部超时使用。使用就近原则的hash用于分摊 优先队列的长度。
