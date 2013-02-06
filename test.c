@@ -42,18 +42,28 @@ main(int argc,char * argv[])
 	}
 	int i;
 	//srand(time(NULL));
-	printf("adding entry max number : %d please wait\n, ",len);
+	clock_t pre = clock();
+	clock_t begin = pre;
+	printf("adding entry max number : %d please wait\n cutclock:%ld\n, ",len,pre);
 	struct UserData data;
 	for(i=0;i<len;i++){
 		data.data = (void *)i;
 		data.sz = 0;
-		TET_insertEntry(tet,i,data,i%1000+2);
+		TET_insertEntry(tet,i,data,i%10240);
+		if(i%10000 == 0 && i!=0){
+			clock_t now = clock();
+			printf("added %d ....clock:%ld dif:%ld\n",i,now,now-pre );
+			pre = now;
+		}
+		
 	}
-	printf("added entry max number : %d \n, ",len);
+	clock_t lst = clock();
+	printf("added entry max number : %d cutclock:%ld all:%ld\n, ",len,lst,lst-begin);
 	int ret =0;
-	for(i=0;i<len;i++){
-		if( (ret = TET_queryEntry(tet,i,&data)) == 0){
-			printf("%d, ",(int)data.data);
+	for(i=0;i<100;i++){
+		int d = rand()%len;
+		if( (ret = TET_queryEntry(tet,d,&data)) == 0){
+			printf("[%d->%d], ",d,(int)data.data);
 		}else{
 			printf("%s, ","nil");
 		}
@@ -65,7 +75,8 @@ main(int argc,char * argv[])
 		printf("ontimer : %d \n, ",i);
 		TET_onTimer(tet,1);
 	}
-	for(i=0;i<len;i++){
+	for(i=0;i<100;i++){
+		int d = rand()%len;
 		if( (ret = TET_removeEntry(tet,i,&data)) == 0){
 			printf("%d, ",(int)data.data);
 		}else{

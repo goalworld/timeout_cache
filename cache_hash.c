@@ -1,4 +1,4 @@
-#define HASH_SET_S 1024
+#define HASH_SET_S 10240
 struct _ListItem
 {
 	struct Entry ety;
@@ -8,7 +8,6 @@ struct _ListItem
 struct _List
 {
 	struct _ListItem * head,*tail;
-	unsigned minTimeout;
 };
 static void _listInit(struct _List *list);
 static void _listDestroy(struct _List *list);
@@ -18,12 +17,11 @@ static int _listOnTimer(struct _List *list,unsigned times,remove_cb cb,void *cba
 static void _listRealInsert(struct _List *list,struct _ListItem*item);
 struct HashList{
 	struct _List lists[HASH_SET_S];
-	unsigned minTimeout;
 	unsigned times;
 	int numItem;
 
 };
-#define HASH_FUNC(x)((x)%HASH_SET_S)
+#define HASH_FUNC(x)(((x)*21)%HASH_SET_S)
 void * 
 hashListNew()
 {
@@ -51,9 +49,6 @@ hashListInsert(void *arg,int key,struct UserData data,unsigned timeout)
 	int hash = HASH_FUNC(t);
 	void *ret = _listInsert(&hl->lists[hash],key,data,t);
 	if(ret){
-		if(t < hl->minTimeout){
-			hl->minTimeout = t;
-		}
 		if(hl->numItem == 0){
 		//startTimer();
 		}
@@ -71,7 +66,6 @@ hashListRemove(void *arg,void *item)
 	hl->numItem--;
 	if(hl->numItem == 0){
 		hl->times = 0;
-		hl->minTimeout = -1;
 		//stopTimer();
 	}
 }
@@ -81,11 +75,9 @@ hashListOnTimer(void *arg,unsigned times,remove_cb cb,void *cbarg)
 	struct HashList * hl= (struct HashList *)arg;
 	if( hl->numItem > 0 ){
 		hl->times+=times;
-		printf("Times:%d  minTimeout:%d numItem:%d\n",hl->times,hl->minTimeout,hl->numItem);
-		if(hl->times >= hl->minTimeout){
-			int hash = HASH_FUNC(hl->times);
-			_listOnTimer(&hl->lists[hash],hl->times,cb,cbarg);
-		}
+		printf("Times:%d  numItem:%d\n",hl->times,hl->numItem);
+		int hash = HASH_FUNC(hl->times);
+		_listOnTimer(&hl->lists[hash],hl->times,cb,cbarg);
 	}
 }
 //---------------------------------------------------------------------------------
@@ -187,8 +179,6 @@ _listOnTimer(struct _List *list,unsigned times,remove_cb cb,void *cbarg)
 				break;
 			}
 		}
-		if(list->head)
-			list->minTimeout = list->head->ety.timeout;
 	}
 	return num;
 }
