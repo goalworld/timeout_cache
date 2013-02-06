@@ -48,7 +48,7 @@ main(int argc,char * argv[])
 	clock_t pre  =  clock();
 	clock_t begin= pre;
 
-	printf("adding entry max number : %d please wait\n, ",len);
+	printf("adding entry max number : %d please wait\n",len);
 	for(i=1;i<=len;i++){
 		data.data = (void *)i;
 		data.sz = 0;
@@ -94,5 +94,7 @@ main(int argc,char * argv[])
 		}
 	}
 	TET_del(tet);
+	puts("press any key");
+	pause();
 	return 0;
 }
