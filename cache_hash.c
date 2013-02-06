@@ -26,7 +26,7 @@ struct HashList{
 	int numItem;
 
 };
-#define HASH_FUNC(x) ( ((x)*7)%HASH_SET_S )//multiply prime number make more hash
+#define HASH_FUNC(x) ( ((long long)(x)*21)%HASH_SET_S )//multiply prime number make more hash
 //(((int)( (((x)*618%1000)/1000)*HASH_SET_S))) 
 void * 
 hashListNew()

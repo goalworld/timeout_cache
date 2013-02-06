@@ -80,11 +80,16 @@ main(int argc,char * argv[])
 
 	puts("\n\n\n (3):TIMEOUT: wait a moment now is testing timeout-remove"); 
 	int num = 0;
-	pre = clock();
+	int ernum=0;
+	begin = pre = clock();
 	for(i=0;i<300;i++){
-		num += TET_onTimer(tet,1);
+		num += (ernum = TET_onTimer(tet,1));
+		int now = clock();
+		df = now-pre;
+		printf("TIMEOUT-RESULT: TimePass : %d s :DelNum:%d clock:%ld ms oneclock:%f ms\n",i,ernum,df,(double)(df)/(double)(num));
+		pre = now;
 	}
-	df = clock()-pre;
+	df = clock()-begin;
 	printf("\n\n\nTIMEOUT-RESULT: TimePass : %d s :DelNum:%d clock:%ld ms oneclock:%f ms\n\n\n",i,num,df,(double)(df)/(double)(num));
 
 	puts("\n\n\n(4)REMOVE: wait a moment now is testing remove");
