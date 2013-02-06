@@ -46,7 +46,7 @@ int main(int argc,char * argv[])
 	for(i=0;i<len;i++){
 		data.data = (void *)i;
 		data.sz = 0;
-		TET_insertEntry(tet,i,data,i%40+5);
+		TET_insertEntry(tet,i,data,i%40+2);
 	}
 	printf("added entry max number : %d \n, ",len);
 	int ret =0;

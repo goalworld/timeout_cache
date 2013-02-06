@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#define HASH_SIZE 10240
+#define HASH_SIZE 4 * 10240
 struct Entry{
 	struct UserData data;
 	int key;
@@ -176,7 +176,7 @@ listRealInsert(struct List *list,struct ListItem*item)
 	}
 	struct ListItem *cut = list->head;
 	while(1){
-		if(cut->ety.timeout > item->ety.timeout){//optimize：cpu idle case itemptr to array 1：,binary search 。2：by timeout average chose tial or head 
+		if(cut->ety.timeout >= item->ety.timeout){//optimize：cpu idle case itemptr to array 1：,binary search 。2：by timeout average chose tial or head 
 			if(!cut->pre){
 				list->head = item;
 			}else{
