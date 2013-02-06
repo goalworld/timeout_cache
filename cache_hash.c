@@ -149,6 +149,37 @@ _listRealInsert(struct _List *list,struct _ListItem*item)
 	}
 }
 static void
+_listRealInsertFromTail(struct _List *list,struct _ListItem*item)
+{
+	if(!list->head){
+		list->head = item;
+		list->tail = item;
+		return;
+	}
+	struct _ListItem *cut = list->tail;
+	while(1){
+		//optimize 1 cpu idle case itemptr to array 2binary search timeout average chose tial or head
+		if(cut->ety.timeout <= item->ety.timeout){
+			if(!cut->next){
+				list->tail = item;
+			}else{
+				cut->next->pre = item;
+				item->next = cut->next;
+			}
+			item->pre = cut;
+			cut->next = item;
+			break;
+		}
+		if(!cut->pre){
+			cut->pre = item;
+			item->next = cut;
+			list->head = item;
+			break;
+		}
+		cut = cut->next;
+	}
+}
+static void
 _listRemove(struct _List *list,struct _ListItem * litem)
 {
 	if(litem->pre)litem->pre->next = litem->next;
