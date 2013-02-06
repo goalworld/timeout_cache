@@ -82,11 +82,11 @@ main(int argc,char * argv[])
 	int num = 0;
 	int ernum=0;
 	begin = pre = clock();
-	for(i=0;i<300;i++){
+	for(i=0;i<100;i++){
 		num += (ernum = TET_onTimer(tet,1));
 		int now = clock();
 		df = now-pre;
-		printf("TIMEOUT-RESULT: TimePass : %d s :DelNum:%d clock:%ld ms oneclock:%f ms\n",i,ernum,df,(double)(df)/(double)(num));
+		printf("TIMEOUT-RESULT: TimePass : %d s :DelNum:%d clock:%ld ms oneclock:%f ms\n",i,ernum,df,(double)(df)/(double)(ernum));
 		pre = now;
 	}
 	df = clock()-begin;
