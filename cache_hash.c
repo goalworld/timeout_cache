@@ -79,7 +79,12 @@ hashListOnTimer(void *arg,unsigned times,remove_cb cb,void *cbarg)
 		hl->times+=times;
 		printf("Times:%d  numItem:%d\n",hl->times,hl->numItem);
 		int hash = HASH_FUNC(hl->times);
-		_listOnTimer(&hl->lists[hash],hl->times,cb,cbarg);
+		int num = _listOnTimer(&hl->lists[hash],hl->times,cb,cbarg);
+		hl->numItem -= num;
+		if(hl->numItem == 0){
+			hl->times = 0;
+			//stopTimer();
+		}
 	}
 }
 //---------------------------------------------------------------------------------

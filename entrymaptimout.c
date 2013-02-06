@@ -88,9 +88,9 @@ TET_onTimer(struct ToEntryTable *tet,unsigned times){
 int
 TET_insertEntry(struct ToEntryTable* tet, int key,struct UserData data,unsigned timeout)
 {
-	if(hashQuery(&tet->hmap,key)){
+	/*if(hashQuery(&tet->hmap,key)){
 		return -1;
-	}
+	}*/
 	void * item = tet->toCahe.Insert(tet->timeoutCache,key,data,timeout);
 	hashInsert(&tet->hmap,key,item);
 	return 0;
