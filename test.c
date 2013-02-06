@@ -94,7 +94,5 @@ main(int argc,char * argv[])
 		}
 	}
 	TET_del(tet);
-	puts("press any key");
-	pause();
 	return 0;
 }
