@@ -65,7 +65,7 @@ main(int argc,char * argv[])
 		if( (ret = TET_queryEntry(tet,d,&data)) == 0){
 			printf("[%8d->%8d] %s",d,(int)data.data,i%4 == 0?"\n":"");
 		}else{
-			printf("[%8d->%8s] %s","nil",i%4 == 0?"\n":"");
+			printf("[%8d->%8s] %s",d,"nil",i%4 == 0?"\n":"");
 		}
 
 	}
@@ -77,7 +77,7 @@ main(int argc,char * argv[])
 		pre1 = clock();
 		num = TET_onTimer(tet,1);
 		clock_t now1 = clock();
-		printf("ontimer : %d :deled:%d clock:%ld\n",i,num,now1-pre1);
+		printf("TimePass : %d :DelNum:%d clock:%ld\n",i,num,now1-pre1);
 		pre1 = now1;
 	}
 	for(i=0;i<10000;i++){
@@ -85,7 +85,7 @@ main(int argc,char * argv[])
 		if( (ret = TET_removeEntry(tet,d,&data)) == 0){
 			printf("[%8d->%8d] %s",d,(int)data.data,i%4 == 0?"\n":"");
 		}else{
-			printf("[%8d->%8s] %s","nil",i%4 == 0?"\n":"");
+			printf("[%8d->%8s] %s",d,"nil",i%4 == 0?"\n":"");
 		}
 	}
 

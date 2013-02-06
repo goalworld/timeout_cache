@@ -30,10 +30,10 @@ struct HashItem
 	void *host;
 	struct HashItem *next;
 };
-int 
+static inline int 
 hash_func(int key)
 {
-	return key%HASH_SIZE;
+	return (key*7)%HASH_SIZE;
 }
 struct HashMap
 {
