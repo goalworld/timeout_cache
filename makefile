@@ -1,5 +1,5 @@
 CC = gcc
-SRCS = ./test.c ./entrymaptimout.c
+SRCS = ./test.c ./toentrytable.c
 DEBUG=-g
 CFALGS = -O3
 test-realease:$(SRCS)
