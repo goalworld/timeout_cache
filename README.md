@@ -28,6 +28,6 @@ timeout_cache
 1：使用timeout建立二叉树。
 2：key-> treenode 外部查询
 
-双hash（之后实现）
+双hash（代码实现了）
 1：key -> item 外部查询 删除 用。
 2：timeout->item 内部超时使用。使用就近原则的hash用于分摊 优先队列的长度。
