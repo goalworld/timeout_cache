@@ -11,7 +11,10 @@ struct Entry{
 	int key;
 	unsigned timeout;
 };
-struct ToEntryTable *TET_new();
+enum  {
+	TET_LIST
+};
+struct ToEntryTable *TET_new( int type);
 void TET_del(struct ToEntryTable *txt);
 int TET_insertEntry(struct ToEntryTable* tet, int key,struct UserData data,unsigned  timeout);
 int TET_removeEntry(struct ToEntryTable* tet ,int key,struct UserData *data);

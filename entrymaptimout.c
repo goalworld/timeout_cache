@@ -52,7 +52,10 @@ struct ToEntryTable *
 TET_new( int type)
 {
 	struct ToEntryTable *p = (struct ToEntryTable *)malloc(sizeof(struct ToEntryTable));
-	initToCache(&p->toCahe,&p->hmap.toCaIem);
+	if( initToCache(&p->toCahe,&p->hmap.toCaIem,type) != 0){
+		free(p);
+		return NULL;
+	}
 	p->timeoutCache = p->toCahe.New();
 	hashInit(&p->hmap);
 	return p;
@@ -179,9 +182,14 @@ hashRemove( struct HashMap *hmap,int key )
 }
 
 #include "cache_list.c"
-int initToCache( struct ToCache * p,struct ToCacheItem * pitem)
+int initToCache( struct ToCache * p,struct ToCacheItem * pitem,int type)
 {
-	SET_TO_CACHE(p,list);
-	SET_TO_CACHE_ITEM(pitem,list);
-	return 0;
+	if(TET_LIST == type){
+		SET_TO_CACHE(p,list);
+		SET_TO_CACHE_ITEM(pitem,list);
+		return 0;
+	}
+	return -1;
+
+	
 }

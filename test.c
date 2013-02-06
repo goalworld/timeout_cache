@@ -33,7 +33,7 @@ int main(int argc,char * argv[])
 		puts("please input num entry add like : ./test 10000");
 		return 1;
 	}
-	struct ToEntryTable * tet = TET_new();
+	struct ToEntryTable * tet = TET_new(TET_LIST);
 	int len = atoi(argv[1]);
 	if(len <= 0){
 		puts("please input number like : ./test 10000");
