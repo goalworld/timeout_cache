@@ -45,10 +45,10 @@ main(int argc,char * argv[])
 	int i;
 	srand(time(NULL));
 	struct UserData data;
-	clock_t pre  =  clock();
-	clock_t begin= pre;
+	clock_t pre  =  clock(),df,begin;
+	begin= pre;
 
-	printf("adding entry max number : %d please wait\n",len);
+	printf("(1)INSERT: adding entry max number : %d please wait\n",len);
 	for(i=1;i<=len;i++){
 		data.data = (void *)i;
 		data.sz = 0;
@@ -58,14 +58,15 @@ main(int argc,char * argv[])
 			printf("added %d ....difclock:%ld ms\n",i,now-pre );
 			pre = now;
 		}
-		
 	}
-	clock_t ddf = clock()-begin;
-	printf("\n\n\n(1):added entry max number : %d all:%ld ms  one:%f ms\n\n\n ",len,ddf,(double)(ddf)/len);
+	df = clock()-begin;
+	printf("\n\n\nINSERT-RESULT:added entry max number : %d all:%ld ms  one:%f ms\n\n\n ",len,df,(double)(df)/len);
 
-	puts("wait a moment now is testing query"); 
+	puts("(2):QUERY: wait a moment now is testing query"); 
 	int ret =0;
-	for(i=0;i<100;i++){
+	pre = clock();
+	int numq = 100;
+	for(i=0;i<numq;i++){
 		int d = rand()%len;
 		if( (ret = TET_queryEntry(tet,d,&data)) == 0){
 			printf("[%8d->%8d] %s",d,(int)data.data,i%4 == 0?"\n":"");
@@ -74,17 +75,21 @@ main(int argc,char * argv[])
 		}
 
 	}
+	df = clock()-pre;
+	printf("\n\n\nQUERY-RESULT : num:%d clock:%ld ms oneclock:%f ms\n\n\n",numq,df,(double)(df)/(double)(numq));
 
-	puts("\n\n\n wait a moment now is testing timeout-remove"); 
-	clock_t pre1 = clock(),df;
+	puts("\n\n\n (3):TIMEOUT: wait a moment now is testing timeout-remove"); 
 	int num = 0;
+	pre = clock();
 	for(i=0;i<300;i++){
 		num += TET_onTimer(tet,1);
 	}
-	df = clock()-pre1;
-	printf("(2):TimePass : %d s :DelNum:%d clock:%ld ms oneclock:%f ms\n\n\n",i,num,df,(double)(df)/(double)(num));
+	df = clock()-pre;
+	printf("\n\n\nTIMEOUT-RESULT: TimePass : %d s :DelNum:%d clock:%ld ms oneclock:%f ms\n\n\n",i,num,df,(double)(df)/(double)(num));
 
-	puts("wait a moment now is testing remove"); 
+	puts("\n\n\n(4)REMOVE: wait a moment now is testing remove");
+	pre = clock(); 
+	int numd = 100;
 	for(i=0;i<100;i++){
 		int d = rand()%len;
 		if( (ret = TET_removeEntry(tet,d,&data)) == 0 ){
@@ -93,6 +98,8 @@ main(int argc,char * argv[])
 			printf("[%8d->%8s] %s",d,"nil",i%4 == 0?"\n":"");
 		}
 	}
+	df = clock()-pre;
+	printf("\n\n\nREMOVE-RESULT : num:%d clock:%ld ms oneclock:%f ms\n\n\n",numd,df,(double)(df)/(double)(numd));
 	TET_del(tet);
 	return 0;
 }
