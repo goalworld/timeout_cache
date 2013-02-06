@@ -65,19 +65,17 @@ hashListRemove(void *arg,void *item)
 	struct HashList * hl= (struct HashList *)arg;
 	int hash = HASH_FUNC(litem->ety.timeout);
 	_listRemove(&hl->lists[hash],litem);
-	hl->numItem--;
-	if(hl->numItem == 0){
+	if(--hl->numItem == 0){
 		hl->times = 0;
 		//stopTimer();
 	}
 }
-static void
+static int
 hashListOnTimer(void *arg,unsigned times,remove_cb cb,void *cbarg)
 {
 	struct HashList * hl= (struct HashList *)arg;
 	if( hl->numItem > 0 ){
 		hl->times+=times;
-		printf("Times:%d  numItem:%d\n",hl->times,hl->numItem);
 		int hash = HASH_FUNC(hl->times);
 		int num = _listOnTimer(&hl->lists[hash],hl->times,cb,cbarg);
 		hl->numItem -= num;
@@ -85,7 +83,9 @@ hashListOnTimer(void *arg,unsigned times,remove_cb cb,void *cbarg)
 			hl->times = 0;
 			//stopTimer();
 		}
+		return num;
 	}
+	return 0;
 }
 //---------------------------------------------------------------------------------
 static struct Entry 

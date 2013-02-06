@@ -10,7 +10,7 @@ struct ToCache
 	void (*Del)(void *);
 	void *(*Insert)(void *list,int key,struct UserData data,unsigned timeout);
 	void (*Remove)(void *list,void * litem);
-	void(* OnTimer)(void *list,unsigned timeout,remove_cb cb,void *arg);
+	int(* OnTimer)(void *list,unsigned timeout,remove_cb cb,void *arg);
 };
 struct ToCacheItem
 {
@@ -81,9 +81,9 @@ notifyListItemRemove(void *arg ,struct Entry ety)
 	hashRemove(&tet->hmap,ety.key);
 }
 
-void 
+int 
 TET_onTimer(struct ToEntryTable *tet,unsigned times){
-	tet->toCahe.OnTimer(tet->timeoutCache,times,notifyListItemRemove,tet);
+	return tet->toCahe.OnTimer(tet->timeoutCache,times,notifyListItemRemove,tet);
 }
 int
 TET_insertEntry(struct ToEntryTable* tet, int key,struct UserData data,unsigned timeout)
@@ -178,7 +178,7 @@ hashRemove( struct HashMap *hmap,int key )
 			}else{
 				hmap->items[hash] = cut->next;
 			}
-			struct ListItem * item = cut->host;
+			void* item = cut->host;
 			free(cut);
 			return item;
 		}

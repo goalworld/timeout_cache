@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-//
+/*
 #ifdef WIN32
 #include <windows.h>
 #else
@@ -26,7 +26,7 @@ test_sleep(double delay)
 	tv.tv_usec = (long)((delay - (double)(tv.tv_sec)) * 1e6);
 	select (0, 0, 0, 0, &tv);
 #endif
-}
+}*/
 int 
 main(int argc,char * argv[])
 {
@@ -41,7 +41,7 @@ main(int argc,char * argv[])
 		return 1;
 	}
 	int i;
-	//srand(time(NULL));
+	srand(time(NULL));
 	clock_t pre = clock();
 	clock_t begin = pre;
 	printf("adding entry max number : %d please wait\n cutclock:%ld\n, ",len,pre);
@@ -49,7 +49,7 @@ main(int argc,char * argv[])
 	for(i=0;i<len;i++){
 		data.data = (void *)i;
 		data.sz = 0;
-		TET_insertEntry(tet,i,data,i%10240);
+		TET_insertEntry(tet,i,data,(rand()*7)%10240);
 		if(i%10000 == 0 && i!=0){
 			clock_t now = clock();
 			printf("added %d ....clock:%ld dif:%ld\n",i,now,now-pre );
@@ -63,24 +63,29 @@ main(int argc,char * argv[])
 	for(i=0;i<100;i++){
 		int d = rand()%len;
 		if( (ret = TET_queryEntry(tet,d,&data)) == 0){
-			printf("[%d->%d], ",d,(int)data.data);
+			printf("[%8d->%8d] %s",d,(int)data.data,i%4 == 0?"\n":"");
 		}else{
-			printf("%s, ","nil");
+			printf("[%8d->%8s] %s","nil",i%4 == 0?"\n":"");
 		}
 
 	}
 	puts("");
-	for(i=0;i<25;i++){
-		test_sleep(1.0);
-		printf("ontimer : %d \n, ",i);
-		TET_onTimer(tet,1);
+	clock_t pre1;
+	int num = 0;
+	for(i=0;i<1000;i++){
+		//test_sleep(1.0);
+		pre1 = clock();
+		num = TET_onTimer(tet,1);
+		clock_t now1 = clock();
+		printf("ontimer : %d :deled:%d clock:%ld\n",i,num,now1-pre1);
+		pre1 = now1;
 	}
-	for(i=0;i<100;i++){
+	for(i=0;i<10000;i++){
 		int d = rand()%len;
-		if( (ret = TET_removeEntry(tet,i,&data)) == 0){
-			printf("%d, ",(int)data.data);
+		if( (ret = TET_removeEntry(tet,d,&data)) == 0){
+			printf("[%8d->%8d] %s",d,(int)data.data,i%4 == 0?"\n":"");
 		}else{
-			printf("%s, ","nil");
+			printf("[%8d->%8s] %s","nil",i%4 == 0?"\n":"");
 		}
 	}
 

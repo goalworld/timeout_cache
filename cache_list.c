@@ -122,18 +122,19 @@ listRemove(void *arg,void * item)
 	listItemSub(list);
 	free(litem);
 }
-static void
+static int
 listOnTimer(void *arg,unsigned times,remove_cb cb,void *cbarg)
 {
 	struct List *list = (struct List *)(arg);
+	int num = 0;
 	if( list->numItem > 0 ){
 		list->times+=times;
-		printf("cut times %d : min timeout%d numitem:%d\n",list->times,list->minTimeout,list->numItem);
 		if(list->times >= list->minTimeout){
 			while( list->head->ety.timeout <= list->times ){
 				struct ListItem *tmp = list->head;
 				list->head = tmp->next;
 				listItemSub(list);
+				num++;
 				cb(cbarg,tmp->ety);
 				free(tmp);
 				if( !list->head ){
