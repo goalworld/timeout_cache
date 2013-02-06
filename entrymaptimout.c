@@ -33,7 +33,7 @@ struct HashItem
 static inline int 
 hash_func(int key)
 {
-	return (key*7)%HASH_SIZE;
+	return (key*7)%HASH_SIZE; //multiply prime number make more hash
 }
 struct HashMap
 {
@@ -52,7 +52,7 @@ static void hashInit(struct HashMap *hmap);
 static void hashDestroy(struct HashMap *hmap);
 static void hashInsert( struct HashMap *hmap,int key,void *item );
 static void * hashQuery(struct HashMap *hmap, int key );
-static void * hashRemove( struct HashMap *hmap,int key );
+static void * hashRemove( struct HashMap *hmap,int key ,long long  timeout);
 
 
 struct ToEntryTable * 
@@ -78,7 +78,7 @@ static void
 notifyListItemRemove(void *arg ,struct Entry ety)
 {
 	struct ToEntryTable* tet =( struct ToEntryTable* )arg;
-	hashRemove(&tet->hmap,ety.key);
+	hashRemove(&tet->hmap,ety.key,ety.timeout);
 }
 
 int 
@@ -98,7 +98,7 @@ TET_insertEntry(struct ToEntryTable* tet, int key,struct UserData data,unsigned 
 int
 TET_removeEntry(struct ToEntryTable* tet ,int key,struct UserData *data)
 {
-	void * item = hashRemove(&tet->hmap,key);
+	void * item = hashRemove(&tet->hmap,key,-1);
 	if(item){
 		*data = tet->hmap.toCaIem.GetEntryByItem(item).data;
 		tet->toCahe.Remove(tet->timeoutCache,item);
@@ -165,14 +165,14 @@ hashQuery(struct HashMap *hmap, int key )
 	return NULL;
 }
 static void *
-hashRemove( struct HashMap *hmap,int key )
+hashRemove( struct HashMap *hmap,int key ,long long  timeout)
 {
 	int hash = hash_func(key);
-	int retkey;
+	struct Entry ety;
 	struct HashItem *pre = NULL,*cut = hmap->items[hash];
 	while(cut){
-		retkey = hmap->toCaIem.GetEntryByItem(cut->host).key;
-		if(retkey == key){
+		ety = hmap->toCaIem.GetEntryByItem(cut->host);
+		if( (ety.key == key) && (timeout == -1 || ety.timeout == timeout) ){
 			if(pre){
 				pre->next = cut->next;
 			}else{

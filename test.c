@@ -49,7 +49,7 @@ main(int argc,char * argv[])
 	for(i=0;i<len;i++){
 		data.data = (void *)i;
 		data.sz = 0;
-		TET_insertEntry(tet,i,data,(rand()*7)%10240);
+		TET_insertEntry(tet,i,data,(rand()*7)%4096);
 		if(i%10000 == 0 && i!=0){
 			clock_t now = clock();
 			printf("added %d ....clock:%ld dif:%ld\n",i,now,now-pre );
@@ -72,7 +72,7 @@ main(int argc,char * argv[])
 	puts("");
 	clock_t pre1;
 	int num = 0;
-	for(i=0;i<1000;i++){
+	for(i=0;i<500;i++){
 		//test_sleep(1.0);
 		pre1 = clock();
 		num = TET_onTimer(tet,1);
@@ -80,7 +80,7 @@ main(int argc,char * argv[])
 		printf("TimePass : %d :DelNum:%d clock:%ld\n",i,num,now1-pre1);
 		pre1 = now1;
 	}
-	for(i=0;i<10000;i++){
+	for(i=0;i<1000;i++){
 		int d = rand()%len;
 		if( (ret = TET_removeEntry(tet,d,&data)) == 0){
 			printf("[%8d->%8d] %s",d,(int)data.data,i%4 == 0?"\n":"");
