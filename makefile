@@ -1,9 +1,10 @@
 CC = gcc
 SRCS = ./test.c ./toentrytable.c
-DEBUG=-g
+DEBUG=-g 
 CFALGS = -O3
+all:test-realease test-debug
+
 test-realease:$(SRCS)
-	$(CC) $(CFALGS) -o $@ $^
+	$(CC) $(CFALGS) -o $@ $^ -pg
 test-debug:$(SRCS)
-	$(CC) $(DEBUG) $(CFALGS) -o $@ $^ 
- 
+	$(CC) $(DEBUG) -o $@ $^ -pg

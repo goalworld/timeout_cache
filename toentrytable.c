@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#define HASH_SIZE 4 * 10240
+#define HASH_SIZE 10* 10240
 typedef void(*remove_cb)(void *arg,struct Entry try) ;
 struct ToCache
 {
@@ -173,14 +173,15 @@ hashRemove( struct HashMap *hmap,int key ,long long  timeout)
 	struct Entry ety;
 	struct HashItem *pre = NULL,*cut = hmap->items[hash];
 	while(cut){
-		ety = hmap->toCaIem.GetEntryByItem(cut->host);
+		ety = *(struct Entry *)cut->host;//hmap->toCaIem.GetEntryByItem(cut->host);
 		if( (ety.key == key) && (timeout == -1 || ety.timeout == timeout) ){
-			if(pre){
+			void* item = pre?(pre->next = cut->next,cut->host):(hmap->items[hash] = cut->next,cut->host);
+			/*if(pre){
 				pre->next = cut->next;
 			}else{
 				hmap->items[hash] = cut->next;
-			}
-			void* item = cut->host;
+			}*/
+			//void* item = cut->host;
 			free(cut);
 			return item;
 		}

@@ -1,5 +1,7 @@
 timeout_cache
 =============
+make
+./test-release 1000000
 1:时间总是总第一个数据进入开始的时间作为起始点 firstTime。
 之后数据的timeou :now-firstTime+timout.
 这样无需更新每项的时间。

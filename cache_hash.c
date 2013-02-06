@@ -7,7 +7,7 @@ struct _ListItem
 };
 struct _List
 {
-	struct _ListItem * head,*tail;
+	struct _ListItem * head,*tail,*preInsert;
 };
 static void _listInit(struct _List *list);
 static void _listDestroy(struct _List *list);
@@ -16,13 +16,18 @@ static void _listRemove(struct _List *list,struct _ListItem * litem);
 static int _listOnTimer(struct _List *list,unsigned times,remove_cb cb,void *cbarg);
 static void _listRealInsert(struct _List *list,struct _ListItem*item);
 static void _listRealInsertFromTail(struct _List *list,struct _ListItem*item);
+static void 
+_listRealInsertUpAB(struct _List *list,struct _ListItem *A,struct _ListItem *B,struct _ListItem*item);
+static void 
+_listRealInsertDwonAB(struct _List *list,struct _ListItem *A,struct _ListItem *B,struct _ListItem*item);
 struct HashList{
 	struct _List lists[HASH_SET_S];
 	unsigned times;
 	int numItem;
 
 };
-#define HASH_FUNC(x)(((x)*7)%HASH_SET_S) //multiply prime number make more hash
+#define HASH_FUNC(x) ( ((x)*7)%HASH_SET_S )//multiply prime number make more hash
+//(((int)( (((x)*618%1000)/1000)*HASH_SET_S))) 
 void * 
 hashListNew()
 {
@@ -122,23 +127,83 @@ _listInsert(struct _List *list,int key,struct UserData data,unsigned timeout)
 	p->next = NULL;
 	p->pre = NULL;
 	if(list->head){
-		unsigned t = list->head->ety.timeout + list->tail->ety.timeout;
-		if(timeout >= t/2){
-			_listRealInsertFromTail(list,p);
-			return p;
+		if(list->preInsert->ety.timeout > timeout){
+			unsigned t = list->head->ety.timeout + list->preInsert->ety.timeout;
+			if(timeout <= t/2){
+				_listRealInsertUpAB(list,list->head,list->preInsert,p);
+			}else{
+				_listRealInsertDwonAB(list,list->head,list->preInsert,p);
+			}
+		}else{
+			unsigned t = list->tail->ety.timeout + list->preInsert->ety.timeout;
+			if(timeout <= t/2){
+				_listRealInsertUpAB(list,list->preInsert,list->tail,p);
+			}else{
+				_listRealInsertDwonAB(list,list->preInsert,list->tail,p);
+			}
 		}
+	}else{
+		list->head = p;
+		list->tail = p;
 	}
-	_listRealInsert(list,p);
+	list->preInsert = p;
 	return p;
+}
+static void 
+_listRealInsertUpAB(struct _List *list,struct _ListItem *A,struct _ListItem *B,struct _ListItem*item)
+{
+	struct _ListItem *cut = A;
+	do{
+		//optimize 1 cpu idle case itemptr to array 2binary search timeout average chose tial or head
+		if(cut->ety.timeout >= item->ety.timeout){
+			if(!cut->pre){
+				list->head = item;
+			}else{
+				cut->pre->next = item;
+				item->pre = cut->pre;
+			}
+			item->next = cut;
+			cut->pre = item;
+			break;
+		}
+		if(!cut->next){
+			cut->next = item;
+			item->pre = cut;
+			list->tail = item;
+			break;
+		}
+		cut = cut->next;
+	}while(cut != B->next);
+}
+static void 
+_listRealInsertDwonAB(struct _List *list,struct _ListItem *A,struct _ListItem *B,struct _ListItem*item)
+{
+	struct _ListItem *cut = B;
+	do{
+		//optimize 1 cpu idle case itemptr to array 2binary search timeout average chose tial or head
+		if(cut->ety.timeout <= item->ety.timeout){
+			if(!cut->next){
+				list->tail = item;
+			}else{
+				cut->next->pre = item;
+				item->next = cut->next;
+			}
+			item->pre = cut;
+			cut->next = item;
+			break;
+		}
+		if(!cut->pre){
+			cut->pre = item;
+			item->next = cut;
+			list->head = item;
+			break;
+		}
+		cut = cut->pre;
+	}while(cut != A->pre);
 }
 static void
 _listRealInsert(struct _List *list,struct _ListItem*item)
 {
-	if(!list->head){
-		list->head = item;
-		list->tail = item;
-		return;
-	}
 	struct _ListItem *cut = list->head;
 	while(1){
 		//optimize 1 cpu idle case itemptr to array 2binary search timeout average chose tial or head
@@ -165,11 +230,6 @@ _listRealInsert(struct _List *list,struct _ListItem*item)
 static void
 _listRealInsertFromTail(struct _List *list,struct _ListItem*item)
 {
-	if(!list->head){
-		list->head = item;
-		list->tail = item;
-		return;
-	}
 	struct _ListItem *cut = list->tail;
 	while(1){
 		//optimize 1 cpu idle case itemptr to array 2binary search timeout average chose tial or head
@@ -196,12 +256,20 @@ _listRealInsertFromTail(struct _List *list,struct _ListItem*item)
 static void
 _listRemove(struct _List *list,struct _ListItem * litem)
 {
-	if(litem->pre)litem->pre->next = litem->next;
-	if(litem->next)litem->next->pre = litem->pre;
-	if(litem == list->head){
+	int a = 0;
+	if(litem->pre){
+		litem->pre->next = litem->next;
+	}else{
+		a = 1;
 		list->head = litem->next;
-	}else if(litem == list->tail){
+	}
+	if(litem->next){
+		litem->next->pre = litem->pre;
+	}else{
 		list->tail = litem->pre;
+	}
+	if(list->preInsert == litem){
+		list->preInsert = a?litem->next:litem->pre;
 	}
 	free(litem);
 }
