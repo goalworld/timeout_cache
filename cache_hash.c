@@ -15,6 +15,7 @@ static struct _ListItem * _listInsert(struct _List *list,int key,struct UserData
 static void _listRemove(struct _List *list,struct _ListItem * litem);
 static int _listOnTimer(struct _List *list,unsigned times,remove_cb cb,void *cbarg);
 static void _listRealInsert(struct _List *list,struct _ListItem*item);
+static void _listRealInsertFromTail(struct _List *list,struct _ListItem*item);
 struct HashList{
 	struct _List lists[HASH_SET_S];
 	unsigned times;
@@ -56,6 +57,7 @@ hashListInsert(void *arg,int key,struct UserData data,unsigned timeout)
 	}
 	return ret;
 }
+
 static void
 hashListRemove(void *arg,void *item)
 {
@@ -115,9 +117,10 @@ _listInsert(struct _List *list,int key,struct UserData data,unsigned timeout)
 	p->next = NULL;
 	p->pre = NULL;
 	if(list->head){
-		unsigned t = list->head.ety.timeout + list->tail.ety.timeout;
+		unsigned t = list->head->ety.timeout + list->tail->ety.timeout;
 		if(timeout >= t/2){
 			_listRealInsertFromTail(list,p);
+			return p;
 		}
 	}
 	_listRealInsert(list,p);
