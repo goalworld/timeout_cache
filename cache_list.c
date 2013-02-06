@@ -56,6 +56,7 @@ listGetEntryByItem( void *item)
 	struct ListItem * litem = (struct ListItem *)(item);
 	return litem->ety;
 }
+static void listRealInsertFromTail(struct List *list,struct ListItem*item);
 static void listRealInsert(struct List *list,struct ListItem*item);
 static void *
 listInsert(void *arg,int key,struct UserData data,unsigned timeout)
@@ -69,6 +70,13 @@ listInsert(void *arg,int key,struct UserData data,unsigned timeout)
 	p->pre = NULL;
 	if(p->ety.timeout < list->minTimeout){
 		list->minTimeout = p->ety.timeout;
+	}
+	if(list->head){
+		unsigned t = list->head->ety.timeout + list->tail->ety.timeout;
+		if(p->ety.timeout >= t/2){
+			listRealInsertFromTail(list,p);
+			return p;
+		}
 	}
 	listRealInsert(list,p);
 	listItemAdd(list);
@@ -103,6 +111,37 @@ listRealInsert(struct List *list,struct ListItem*item)
 			break;
 		}
 		cut = cut->next;
+	}
+}
+static void
+listRealInsertFromTail(struct List *list,struct ListItem*item)
+{
+	if(!list->head){
+		list->head = item;
+		list->tail = item;
+		return;
+	}
+	struct ListItem *cut = list->tail;
+	while(1){
+		//optimize 1 cpu idle case itemptr to array 2binary search timeout average chose tial or head
+		if(cut->ety.timeout <= item->ety.timeout){
+			if(!cut->next){
+				list->tail = item;
+			}else{
+				cut->next->pre = item;
+				item->next = cut->next;
+			}
+			item->pre = cut;
+			cut->next = item;
+			break;
+		}
+		if(!cut->pre){
+			cut->pre = item;
+			item->next = cut;
+			list->head = item;
+			break;
+		}
+		cut = cut->pre;
 	}
 }
 static void
