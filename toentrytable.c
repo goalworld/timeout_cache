@@ -207,6 +207,4 @@ initToCache( struct ToCache * p,struct ToCacheItem * pitem,int type)
 			}
 	}
 	return -1;
-
-	
 }

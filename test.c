@@ -46,7 +46,7 @@ main(int argc,char * argv[])
 	clock_t begin= pre;
 	printf("adding entry max number : %d please wait\n cutclock:%ld\n, ",len,begin);
 	struct UserData data;
-	for(i=0;i<len;i++){
+	for(i=1;i<=len;i++){
 		data.data = (void *)i;
 		data.sz = 0;
 		TET_insertEntry(tet,i,data,(rand()*7)%10240);
@@ -70,13 +70,14 @@ main(int argc,char * argv[])
 
 	}
 	puts("");
-	clock_t pre1 = clock();;
+	clock_t pre1 = clock(),now1,df;
 	int num = 0;
 	for(i=0;i<500;i++){
 		//test_sleep(1.0);
 		num = TET_onTimer(tet,1);
-		clock_t now1 = clock();
-		printf("TimePass : %d :DelNum:%d clock:%ld\n",i,num,now1-pre1);
+		now1 = clock();
+		df = now1-pre1;
+		printf("TimePass : %d :DelNum:%d clock:%ld oneclock:%f\n",i,num,df,(double)(df)/(double)(num));
 		pre1 = now1;
 	}
 	for(i=0;i<1000;i++){
