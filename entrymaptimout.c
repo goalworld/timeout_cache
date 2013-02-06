@@ -3,14 +3,16 @@
 #include <stdlib.h>
 #include <memory.h>
 #define HASH_SIZE 4 * 10240
-struct ToCache{
+struct ToCache
+{
 	void *(*New)();
 	void (*Del)(void *);
 	void *(*Insert)(void *list,int key,struct UserData data,unsigned timeout);
 	void (*Remove)(void *list,void * litem);
 	void(* OnTimer)(void *list,unsigned timeout,void(*cb)(void *arg,struct Entry try),void *arg);
 };
-struct ToCacheItem{
+struct ToCacheItem
+{
 	struct Entry (*GetEntryByItem)(void * item);
 };
 #define SET_TO_CACHE(tocache,type) \
@@ -22,19 +24,23 @@ struct ToCacheItem{
 
 #define SET_TO_CACHE_ITEM(tci,type) tci->GetEntryByItem = type##GetEntryByItem;\
 
-struct HashItem{
+struct HashItem
+{
 	void *host;
 	struct HashItem *next;
 };
 int 
-hash_func(int key){
+hash_func(int key)
+{
 	return key%HASH_SIZE;
 }
-struct HashMap{
+struct HashMap
+{
 	struct ToCacheItem toCaIem;
 	struct HashItem* items[HASH_SIZE];
 };
-struct ToEntryTable{
+struct ToEntryTable
+{
 	struct HashMap hmap;
 	void * timeoutCache;
 	struct ToCache toCahe;
@@ -182,7 +188,8 @@ hashRemove( struct HashMap *hmap,int key )
 }
 
 #include "cache_list.c"
-int initToCache( struct ToCache * p,struct ToCacheItem * pitem,int type)
+int 
+initToCache( struct ToCache * p,struct ToCacheItem * pitem,int type)
 {
 	if(TET_LIST == type){
 		SET_TO_CACHE(p,list);

@@ -1,10 +1,12 @@
 
-struct ListItem{
+struct ListItem
+{
 	struct Entry ety;
 	struct ListItem* next;
 	struct ListItem* pre;
 };
-struct List{
+struct List
+{
 	struct ListItem * head,*tail;
 	unsigned minTimeout;
 	unsigned times;

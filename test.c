@@ -27,7 +27,8 @@ test_sleep(double delay)
 	select (0, 0, 0, 0, &tv);
 #endif
 }
-int main(int argc,char * argv[])
+int 
+main(int argc,char * argv[])
 {
 	if(argc != 2){
 		puts("please input num entry add like : ./test 10000");
