@@ -123,7 +123,7 @@ listRemove(void *arg,void * item)
 	free(litem);
 }
 static void
-listOnTimer(void *arg,unsigned times,void(*cb)(void *arg,struct Entry try),void *cbarg)
+listOnTimer(void *arg,unsigned times,remove_cb cb,void *cbarg)
 {
 	struct List *list = (struct List *)(arg);
 	if( list->numItem > 0 ){

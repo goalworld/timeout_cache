@@ -12,7 +12,8 @@ struct Entry{
 	unsigned timeout;
 };
 enum  {
-	TET_LIST
+	TET_LIST,
+	TET_HASH
 };
 struct ToEntryTable *TET_new( int type);
 void TET_del(struct ToEntryTable *txt);

@@ -34,7 +34,7 @@ main(int argc,char * argv[])
 		puts("please input num entry add like : ./test 10000");
 		return 1;
 	}
-	struct ToEntryTable * tet = TET_new(TET_LIST);
+	struct ToEntryTable * tet = TET_new(TET_HASH);
 	int len = atoi(argv[1]);
 	if(len <= 0){
 		puts("please input number like : ./test 10000");
@@ -47,7 +47,7 @@ main(int argc,char * argv[])
 	for(i=0;i<len;i++){
 		data.data = (void *)i;
 		data.sz = 0;
-		TET_insertEntry(tet,i,data,i%40+2);
+		TET_insertEntry(tet,i,data,i%1000+2);
 	}
 	printf("added entry max number : %d \n, ",len);
 	int ret =0;

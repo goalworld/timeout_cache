@@ -3,13 +3,14 @@
 #include <stdlib.h>
 #include <memory.h>
 #define HASH_SIZE 4 * 10240
+typedef void(*remove_cb)(void *arg,struct Entry try) ;
 struct ToCache
 {
 	void *(*New)();
 	void (*Del)(void *);
 	void *(*Insert)(void *list,int key,struct UserData data,unsigned timeout);
 	void (*Remove)(void *list,void * litem);
-	void(* OnTimer)(void *list,unsigned timeout,void(*cb)(void *arg,struct Entry try),void *arg);
+	void(* OnTimer)(void *list,unsigned timeout,remove_cb cb,void *arg);
 };
 struct ToCacheItem
 {
@@ -188,6 +189,7 @@ hashRemove( struct HashMap *hmap,int key )
 }
 
 #include "cache_list.c"
+#include "cache_hash.c"
 int 
 initToCache( struct ToCache * p,struct ToCacheItem * pitem,int type)
 {
@@ -195,6 +197,12 @@ initToCache( struct ToCache * p,struct ToCacheItem * pitem,int type)
 		SET_TO_CACHE(p,list);
 		SET_TO_CACHE_ITEM(pitem,list);
 		return 0;
+	}else{
+		if(TET_HASH == type){
+				SET_TO_CACHE(p,hashList);
+				SET_TO_CACHE_ITEM(pitem,hashList);
+				return 0;
+			}
 	}
 	return -1;
 
