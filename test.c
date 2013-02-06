@@ -61,7 +61,7 @@ main(int argc,char * argv[])
 		
 	}
 	clock_t ddf = clock()-begin;
-	printf("added entry max number : %d all:%ld ms  one:%f ms\n, ",len,ddf,(double)(ddf)/len);
+	printf("\n\n\n(1):added entry max number : %d all:%ld ms  one:%f ms\n\n\n ",len,ddf,(double)(ddf)/len);
 
 	puts("wait a moment now is testing query"); 
 	int ret =0;
@@ -75,14 +75,14 @@ main(int argc,char * argv[])
 
 	}
 
-	puts("\n wait a moment now is testing timeout-remove"); 
+	puts("\n\n\n wait a moment now is testing timeout-remove"); 
 	clock_t pre1 = clock(),df;
 	int num = 0;
 	for(i=0;i<300;i++){
 		num += TET_onTimer(tet,1);
 	}
 	df = clock()-pre1;
-	printf("TimePass : %d s :DelNum:%d clock:%ld ms oneclock:%f ms\n",i,num,df,(double)(df)/(double)(num));
+	printf("(2):TimePass : %d s :DelNum:%d clock:%ld ms oneclock:%f ms\n\n\n",i,num,df,(double)(df)/(double)(num));
 
 	puts("wait a moment now is testing remove"); 
 	for(i=0;i<100;i++){
