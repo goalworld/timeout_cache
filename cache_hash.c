@@ -185,7 +185,7 @@ _listRealInsertFromTail(struct _List *list,struct _ListItem*item)
 			list->head = item;
 			break;
 		}
-		cut = cut->next;
+		cut = cut->pre;
 	}
 }
 static void
