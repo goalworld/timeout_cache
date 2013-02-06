@@ -6,6 +6,11 @@ struct UserData{
 	void* data;
 	unsigned sz;
 };
+struct Entry{
+	struct UserData data;
+	int key;
+	unsigned timeout;
+};
 struct ToEntryTable *TET_new();
 void TET_del(struct ToEntryTable *txt);
 int TET_insertEntry(struct ToEntryTable* tet, int key,struct UserData data,unsigned  timeout);
