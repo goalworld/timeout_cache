@@ -114,6 +114,12 @@ _listInsert(struct _List *list,int key,struct UserData data,unsigned timeout)
 	p->ety.data = data;
 	p->next = NULL;
 	p->pre = NULL;
+	if(list->head){
+		unsigned t = list->head.ety.timeout + list->tail.ety.timeout;
+		if(timeout >= t/2){
+			_listRealInsertFromTail(list,p);
+		}
+	}
 	_listRealInsert(list,p);
 	return p;
 }
