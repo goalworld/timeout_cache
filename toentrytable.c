@@ -23,7 +23,7 @@ struct ToCacheItem
 				tocache->Remove = type##Remove;\
 				tocache->OnTimer = type##OnTimer;
 
-#define SET_TO_CACHE_ITEM(tci,type) tci->GetEntryByItem = type##GetEntryByItem;\
+#define SET_TO_CACHE_ITEM(tci,type) tci->GetEntryByItem = type##GetEntryByItem;
 
 struct HashItem
 {
@@ -53,7 +53,10 @@ static void hashDestroy(struct HashMap *hmap);
 static void hashInsert( struct HashMap *hmap,int key,void *item );
 static void * hashQuery(struct HashMap *hmap, int key );
 static void * hashRemove( struct HashMap *hmap,int key ,long long  timeout);
+//-----------------------------------------------------------------------------------------------------
 
+//ToEntryTable
+//------------------------------------------------------------------------------------------------
 
 struct ToEntryTable * 
 TET_new( int type)
@@ -88,9 +91,6 @@ TET_onTimer(struct ToEntryTable *tet,unsigned times){
 int
 TET_insertEntry(struct ToEntryTable* tet, int key,struct UserData data,unsigned timeout)
 {
-	/*if(hashQuery(&tet->hmap,key)){
-		return -1;
-	}*/
 	void * item = tet->toCahe.Insert(tet->timeoutCache,key,data,timeout);
 	hashInsert(&tet->hmap,key,item);
 	return 0;
@@ -117,8 +117,10 @@ TET_queryEntry(struct ToEntryTable* tet ,int key,struct UserData *data)
 	return -1;
 }
 
+//-----------------------------------------------------------------------------------------------------
 
-
+//hash map
+//-----------------------------------------------------------------------------------------------------
 static void
 hashInit(struct HashMap *hmap)
 {
