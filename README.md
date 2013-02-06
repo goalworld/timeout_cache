@@ -1,9 +1,15 @@
 timeout_cache
 =============
+
+存放超时数据。
+外部会进行查询，删除，插入操作。
+数据超时会被删除。
+
 make
 
 
 ./test-release 1000000
+
 
 
 1:时间总是总第一个数据进入开始的时间作为起始点 firstTime。
@@ -23,17 +29,21 @@ make
 
 
 链表+hash（代码实现了）
+
 1：对timeout 使用插入排序。
 2：key->listnode 外部查询，删除。
 
 跳跃表+hash （之后实现）
+
 1：使用timeout建立跳跃表。
 2：key-> treenode 外部查询
 
 树+hash （之后实现）
+
 1：使用timeout建立二叉树。
 2：key-> treenode 外部查询
 
 双hash（代码实现了）
+
 1：key -> item 外部查询 删除 用。
 2：timeout->item 内部超时使用。使用就近原则的hash用于分摊 优先队列的长度。
