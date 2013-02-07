@@ -59,7 +59,7 @@ listGetEntryByItem( void *item)
 static void listRealInsertFromTail(struct List *list,struct ListItem*item);
 static void listRealInsert(struct List *list,struct ListItem*item);
 static void *
-listInsert(void *arg,int key,struct UserData data,unsigned timeout)
+listInsert(void *arg,unsigned key,struct UserData data,unsigned timeout)
 {
 	struct List *list = (struct List *)(arg);
 	struct ListItem *p = malloc(sizeof(struct ListItem));

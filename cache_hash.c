@@ -11,7 +11,7 @@ struct _List
 };
 static void _listInit(struct _List *list);
 static void _listDestroy(struct _List *list);
-static struct _ListItem * _listInsert(struct _List *list,int key,struct UserData data,unsigned timeout);
+static struct _ListItem * _listInsert(struct _List *list,unsigned key,struct UserData data,unsigned timeout);
 static void _listRemove(struct _List *list,struct _ListItem * litem);
 static int _listOnTimer(struct _List *list,unsigned times,remove_cb cb,void *cbarg);
 static void _listRealInsert(struct _List *list,struct _ListItem*item);
@@ -48,7 +48,7 @@ hashListDel(void *env)
 	}
 }
 void *
-hashListInsert(void *arg,int key,struct UserData data,unsigned timeout)
+hashListInsert(void *arg,unsigned key,struct UserData data,unsigned timeout)
 {
 	struct HashList * hl= (struct HashList *)arg;
 	unsigned t = timeout+hl->times;
@@ -118,7 +118,7 @@ _listDestroy(struct _List *list)
 
 
 static struct _ListItem *
-_listInsert(struct _List *list,int key,struct UserData data,unsigned timeout)
+_listInsert(struct _List *list,unsigned key,struct UserData data,unsigned timeout)
 {
 	struct _ListItem *p = malloc(sizeof(struct _ListItem));
 	p->ety.key = key;

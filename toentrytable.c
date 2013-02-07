@@ -8,7 +8,7 @@ struct ToCache
 {
 	void *(*New)();
 	void (*Del)(void *);
-	void *(*Insert)(void *list,int key,struct UserData data,unsigned timeout);
+	void *(*Insert)(void *list,unsigned key,struct UserData data,unsigned timeout);
 	void (*Remove)(void *list,void * litem);
 	int(* OnTimer)(void *list,unsigned timeout,remove_cb cb,void *arg);
 };
@@ -30,10 +30,17 @@ struct HashItem
 	void *host;
 	struct HashItem *next;
 };
-static inline int 
-hash_func(int key)
+static inline unsigned 
+hash_func(unsigned key)
 {
-	return (key*7)%HASH_SIZE; //multiply prime number make more hash
+	key += ~(key << 15);
+    key ^=  (key >> 10);
+    key +=  (key << 3);
+    key ^=  (key >> 6);
+    key += ~(key << 11);
+    key ^=  (key >> 16);
+	return key;
+	//return (key*7)%HASH_SIZE; //multiply prime number make more hash
 }
 struct HashMap
 {
@@ -50,9 +57,9 @@ struct ToEntryTable
 
 static void hashInit(struct HashMap *hmap);
 static void hashDestroy(struct HashMap *hmap);
-static void hashInsert( struct HashMap *hmap,int key,void *item );
-static void * hashQuery(struct HashMap *hmap, int key );
-static void * hashRemove( struct HashMap *hmap,int key ,long long  timeout);
+static void hashInsert( struct HashMap *hmap,unsigned key,void *item );
+static void * hashQuery(struct HashMap *hmap, unsigned key );
+static void * hashRemove( struct HashMap *hmap,unsigned key ,long long  timeout);
 //-----------------------------------------------------------------------------------------------------
 
 //ToEntryTable
@@ -89,14 +96,14 @@ TET_onTimer(struct ToEntryTable *tet,unsigned times){
 	return tet->toCahe.OnTimer(tet->timeoutCache,times,notifyListItemRemove,tet);
 }
 int
-TET_insertEntry(struct ToEntryTable* tet, int key,struct UserData data,unsigned timeout)
+TET_insertEntry(struct ToEntryTable* tet, unsigned key,struct UserData data,unsigned timeout)
 {
 	void * item = tet->toCahe.Insert(tet->timeoutCache,key,data,timeout);
 	hashInsert(&tet->hmap,key,item);
 	return 0;
 }
 int
-TET_removeEntry(struct ToEntryTable* tet ,int key,struct UserData *data)
+TET_removeEntry(struct ToEntryTable* tet ,unsigned key,struct UserData *data)
 {
 	void * item = hashRemove(&tet->hmap,key,-1);
 	if(item){
@@ -107,7 +114,7 @@ TET_removeEntry(struct ToEntryTable* tet ,int key,struct UserData *data)
 	return -1;
 }
 int
-TET_queryEntry(struct ToEntryTable* tet ,int key,struct UserData *data)
+TET_queryEntry(struct ToEntryTable* tet ,unsigned key,struct UserData *data)
 {
 	void * item = hashQuery(&tet->hmap,key);
 	if(item){
@@ -142,9 +149,9 @@ hashDestroy(struct HashMap *hmap)
 	
 }
 static void
-hashInsert( struct HashMap *hmap,int key,void *item )
+hashInsert( struct HashMap *hmap,unsigned key,void *item )
 {
-	int hash = hash_func(key);
+	unsigned hash = hash_func(key);
 	struct HashItem * hitem = (struct HashItem *)malloc(sizeof(struct HashItem));
 	hitem->host = item;
 	struct HashItem **pp = &hmap->items[hash];
@@ -152,10 +159,10 @@ hashInsert( struct HashMap *hmap,int key,void *item )
 	*pp = hitem;
 }
 static void *
-hashQuery(struct HashMap *hmap, int key )
+hashQuery(struct HashMap *hmap, unsigned key )
 {
-	int hash = hash_func(key);
-	int retkey;
+	unsigned hash = hash_func(key);
+	unsigned retkey;
 	struct HashItem *cut = hmap->items[hash];
 	while(cut){
 		retkey = ((struct Entry *)(cut->host))->key;
@@ -167,9 +174,9 @@ hashQuery(struct HashMap *hmap, int key )
 	return NULL;
 }
 static void *
-hashRemove( struct HashMap *hmap,int key ,long long  timeout)
+hashRemove( struct HashMap *hmap,unsigned key ,long long  timeout)
 {
-	int hash = hash_func(key);
+	unsigned hash = hash_func(key);
 	struct Entry ety;
 	struct HashItem *pre = NULL,*cut = hmap->items[hash];
 	while(cut){
