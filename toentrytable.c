@@ -33,14 +33,7 @@ struct HashItem
 static inline unsigned 
 hash_func(unsigned key)
 {
-	key += ~(key << 15);
-    key ^=  (key >> 10);
-    key +=  (key << 3);
-    key ^=  (key >> 6);
-    key += ~(key << 11);
-    key ^=  (key >> 16);
-	return key;
-	//return (key*7)%HASH_SIZE; //multiply prime number make more hash
+	return (key*7)%HASH_SIZE; //multiply prime number make more hash
 }
 struct HashMap
 {
