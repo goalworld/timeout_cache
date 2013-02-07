@@ -52,7 +52,7 @@ main(int argc,char * argv[])
 	for(i=1;i<=len;i++){
 		data.data = (void *)i;
 		data.sz = 0;
-		TET_insertEntry(tet,i,data,(rand()*7)%10240);
+		TET_insertEntry(tet,i,data,rand()%1024);
 		if(i%(len/10) == 0 && i!=0){
 			clock_t now = clock();
 			printf("added %d ....difclock:%ld ms\n",i,now-pre );

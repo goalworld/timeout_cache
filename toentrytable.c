@@ -156,13 +156,13 @@ hashQuery(struct HashMap *hmap, int key )
 {
 	int hash = hash_func(key);
 	int retkey;
-	struct HashItem *p = hmap->items[hash];
-	while(p){
-		retkey = hmap->toCaIem.GetEntryByItem(p->host).key;
+	struct HashItem *cut = hmap->items[hash];
+	while(cut){
+		retkey = ((struct Entry *)(cut->host))->key;
 		if(retkey == key){
-			return p->host;
+			return cut->host;
 		}
-		p = p->next;
+		cut = cut->next;
 	}
 	return NULL;
 }
