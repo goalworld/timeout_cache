@@ -82,7 +82,7 @@ main(int argc,char * argv[])
 	int num = 0;
 	int ernum=0;
 	begin = pre = clock();
-	for(i=0;i<100;i++){
+	for(i=0;i<20;i++){
 		num += (ernum = TET_onTimer(tet,1));
 		int now = clock();
 		df = now-pre;
