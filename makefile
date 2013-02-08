@@ -1,10 +1,11 @@
 CC = gcc
-SRCS = ./test.c ./toentrytable.c
+SRCS = ./test/test.c ./src/toentrytable.c
 DEBUG=-g 
 CFALGS = -O3
+INC_DIR = -I./include
 all:test-realease test-debug
 
 test-realease:$(SRCS)
-	$(CC) $(CFALGS) -o $@ $^ -pg
+	$(CC) $(CFALGS) $(INC_DIR) -o $@ $^ -pg
 test-debug:$(SRCS)
-	$(CC) $(DEBUG) -o $@ $^ -pg
+	$(CC) $(DEBUG) $(INC_DIR) -o $@ $^ -pg

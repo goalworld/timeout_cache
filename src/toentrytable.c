@@ -176,12 +176,6 @@ hashRemove( struct HashMap *hmap,unsigned key ,long long  timeout)
 		ety = *(struct Entry *)cut->host;//hmap->toCaIem.GetEntryByItem(cut->host);
 		if( (ety.key == key) && (timeout == -1 || ety.timeout == timeout) ){
 			void* item = pre?(pre->next = cut->next,cut->host):(hmap->items[hash] = cut->next,cut->host);
-			/*if(pre){
-				pre->next = cut->next;
-			}else{
-				hmap->items[hash] = cut->next;
-			}*/
-			//void* item = cut->host;
 			free(cut);
 			return item;
 		}
