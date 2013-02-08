@@ -1,4 +1,5 @@
 #include "toentrytable.h"
+#include "hashmap.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
@@ -12,10 +13,6 @@ struct ToCache
 	void (*Remove)(void *list,void * litem);
 	int(* OnTimer)(void *list,unsigned timeout,remove_cb cb,void *arg);
 };
-struct ToCacheItem
-{
-	struct Entry (*GetEntryByItem)(void * item);
-};
 #define SET_TO_CACHE(tocache,type) \
 				tocache->New = type##New;\
 				tocache->Del = type##Del;\
@@ -23,65 +20,48 @@ struct ToCacheItem
 				tocache->Remove = type##Remove;\
 				tocache->OnTimer = type##OnTimer;
 
-#define SET_TO_CACHE_ITEM(tci,type) tci->GetEntryByItem = type##GetEntryByItem;
 
-struct HashItem
-{
-	void *host;
-	struct HashItem *next;
-};
-static inline unsigned 
-hash_func(unsigned key)
-{
-	return (key*7)%HASH_SIZE; //multiply prime number make more hash
-}
-struct HashMap
-{
-	struct ToCacheItem toCaIem;
-	struct HashItem* items[HASH_SIZE];
-};
+
 struct ToEntryTable
 {
-	struct HashMap hmap;
+	struct wcHashMap *hmap;
 	void * timeoutCache;
 	struct ToCache toCahe;
 };
-
-
-static void hashInit(struct HashMap *hmap);
-static void hashDestroy(struct HashMap *hmap);
-static void hashInsert( struct HashMap *hmap,unsigned key,void *item );
-static void * hashQuery(struct HashMap *hmap, unsigned key );
-static void * hashRemove( struct HashMap *hmap,unsigned key ,long long  timeout);
-//-----------------------------------------------------------------------------------------------------
-
-//ToEntryTable
-//------------------------------------------------------------------------------------------------
+unsigned 	hashFunc(void *env,const void *key)
+{
+	return (unsigned)key;
+}
 
 struct ToEntryTable * 
 TET_new( int type)
 {
 	struct ToEntryTable *p = (struct ToEntryTable *)malloc(sizeof(struct ToEntryTable));
-	if( initToCache(&p->toCahe,&p->hmap.toCaIem,type) != 0){
+	if( initToCache(&p->toCahe,type) != 0){
 		free(p);
 		return NULL;
 	}
 	p->timeoutCache = p->toCahe.New();
-	hashInit(&p->hmap);
+	struct wcHashMapType whmt;
+	memset(&whmt,0,sizeof(whmt));
+	p->hmap = wcHashMapNew(whmt,NULL);
 	return p;
 }
 void 
 TET_del(struct ToEntryTable *txt)
 {
+	printf("%p\n",txt );
 	txt->toCahe.Del(txt->timeoutCache);
-	hashDestroy(&txt->hmap);
+	wcHashMapDelete(txt->hmap);
+	
 	free(txt);
 }
 static void
 notifyListItemRemove(void *arg ,struct Entry ety)
 {
 	struct ToEntryTable* tet =( struct ToEntryTable* )arg;
-	hashRemove(&tet->hmap,ety.key,ety.timeout);
+	unsigned key = ety.key;
+	wcHashMapRemove(tet->hmap,(void *)key);
 }
 
 int 
@@ -92,15 +72,15 @@ int
 TET_insertEntry(struct ToEntryTable* tet, unsigned key,struct UserData data,unsigned timeout)
 {
 	void * item = tet->toCahe.Insert(tet->timeoutCache,key,data,timeout);
-	hashInsert(&tet->hmap,key,item);
+	wcHashMapInsert(tet->hmap,(void *)key,item);
 	return 0;
 }
 int
 TET_removeEntry(struct ToEntryTable* tet ,unsigned key,struct UserData *data)
 {
-	void * item = hashRemove(&tet->hmap,key,-1);
+	void * item = wcHashMapRemove(tet->hmap,(void *)key);
 	if(item){
-		*data = tet->hmap.toCaIem.GetEntryByItem(item).data;
+		*data = ((struct Entry *)item)->data;
 		tet->toCahe.Remove(tet->timeoutCache,item);
 		return 0;
 	}
@@ -109,97 +89,24 @@ TET_removeEntry(struct ToEntryTable* tet ,unsigned key,struct UserData *data)
 int
 TET_queryEntry(struct ToEntryTable* tet ,unsigned key,struct UserData *data)
 {
-	void * item = hashQuery(&tet->hmap,key);
+	void * item = wcHashMapQuery(tet->hmap,(void *)key);
 	if(item){
-		*data = tet->hmap.toCaIem.GetEntryByItem(item).data;
+		*data = ((struct Entry *)item)->data;
 		return 0;
 	}
 	return -1;
 }
-
-//-----------------------------------------------------------------------------------------------------
-
-//hash map
-//-----------------------------------------------------------------------------------------------------
-static void
-hashInit(struct HashMap *hmap)
-{
-	memset(hmap->items,0,HASH_SIZE*sizeof(struct HashItem*));
-}
-static void 
-hashDestroy(struct HashMap *hmap)
-{
-	int i = 0;
-	struct HashItem *next,*cut;
-	for( ;i<HASH_SIZE;i++){
-		cut = hmap->items[i];
-		while(cut){
-			next = cut->next;
-			free(cut);
-			cut = next;
-		}
-	}
-	
-}
-static void
-hashInsert( struct HashMap *hmap,unsigned key,void *item )
-{
-	unsigned hash = hash_func(key);
-	struct HashItem * hitem = (struct HashItem *)malloc(sizeof(struct HashItem));
-	hitem->host = item;
-	struct HashItem **pp = &hmap->items[hash];
-	hitem->next = *pp;
-	*pp = hitem;
-}
-static void *
-hashQuery(struct HashMap *hmap, unsigned key )
-{
-	unsigned hash = hash_func(key);
-	unsigned retkey;
-	struct HashItem *cut = hmap->items[hash];
-	while(cut){
-		retkey = ((struct Entry *)(cut->host))->key;
-		if(retkey == key){
-			return cut->host;
-		}
-		cut = cut->next;
-	}
-	return NULL;
-}
-static void *
-hashRemove( struct HashMap *hmap,unsigned key ,long long  timeout)
-{
-	unsigned hash = hash_func(key);
-	struct Entry ety;
-	struct HashItem *pre = NULL,*cut = hmap->items[hash];
-	while(cut){
-		ety = *(struct Entry *)cut->host;//hmap->toCaIem.GetEntryByItem(cut->host);
-		if( (ety.key == key) && (timeout == -1 || ety.timeout == timeout) ){
-			void* item = pre?(pre->next = cut->next,cut->host):(hmap->items[hash] = cut->next,cut->host);
-			free(cut);
-			return item;
-		}
-		pre = cut;
-		cut = cut->next;
-	}
-	return NULL;
-}
-
 #include "cache_list.c"
 #include "cache_hash.c"
 int 
-initToCache( struct ToCache * p,struct ToCacheItem * pitem,int type)
+initToCache( struct ToCache * p,int type)
 {
 	if(TET_LIST == type){
 		SET_TO_CACHE(p,list);
-		SET_TO_CACHE_ITEM(pitem,list);
 		return 0;
-	}else{
-		if(TET_HASH == type){
-				SET_TO_CACHE(p,hashList);
-				SET_TO_CACHE_ITEM(pitem,hashList);
-				return 0;
-			}
+	}else if(TET_HASH == type){
+		SET_TO_CACHE(p,hashList);
+		return 0;
 	}
 	return -1;
 }

@@ -104,6 +104,7 @@ _listInit(struct _List *list)
 {
 	list->head = NULL;
 	list->tail = NULL;
+	list->preInsert = NULL;
 }
 static void 
 _listDestroy(struct _List *list)

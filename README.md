@@ -1,5 +1,7 @@
 ﻿timeout_cache
 =============
+编译：
+下载 git@github.com:goalworld/libwods.git
 
 存放超时数据。
 外部会进行查询，删除，插入操作。

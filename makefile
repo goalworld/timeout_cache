@@ -1,5 +1,5 @@
 CC = gcc
-SRCS = ./test/test.c ./src/toentrytable.c
+SRCS = ./test/test.c ./src/toentrytable.c ./src/hashmap.c
 DEBUG=-g 
 CFALGS = -O3
 INC_DIR = -I./include

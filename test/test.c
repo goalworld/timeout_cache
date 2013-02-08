@@ -42,6 +42,9 @@ main(int argc,char * argv[])
 
 
 	struct ToEntryTable * tet = TET_new(TET_HASH);
+	if(!tet){
+		return ;
+	}
 	int i;
 	srand(time(NULL));
 	struct UserData data;
