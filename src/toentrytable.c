@@ -30,7 +30,7 @@ struct ToEntryTable
 };
 unsigned 	hashFunc(void *env,const void *key)
 {
-	return (unsigned)key;
+	return (unsigned)key*7;
 }
 
 struct ToEntryTable * 
