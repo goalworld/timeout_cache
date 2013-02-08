@@ -35,6 +35,6 @@ struct wcHashMap
 struct wcHashMap * wcHashMapNew(struct wcHashMapType hmt,void *hmtenv);
 void 	wcHashMapDelete(struct wcHashMap * hm);
 int 	wcHashMapInsert(struct wcHashMap * hm,const void *key,const void *value);
-const void * 	wcHashMapQuery(struct wcHashMap *hm,const void *key);
-const void * 	wcHashMapRemove(struct wcHashMap *hm,const void *key);
+void * 	wcHashMapQuery(struct wcHashMap *hm,const void *key);
+void * 	wcHashMapRemove(struct wcHashMap *hm,const void *key);
 #endif

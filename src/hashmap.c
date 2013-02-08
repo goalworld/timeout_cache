@@ -57,7 +57,7 @@ wcHashMapInsert(struct wcHashMap * hm,const void *key,const void *value)
 	}
 	return 0;
 }
-const void *
+void *
 wcHashMapQuery(struct wcHashMap *hm,const void *key)
 {
 	struct wcHashMapEntry * entry;
@@ -70,22 +70,22 @@ wcHashMapQuery(struct wcHashMap *hm,const void *key)
 		}
 	}
 	if(entry->kv.value){
-		return hm->ktype.valueClone ? hm->ktype.valueClone(hm->ktenv,entry->kv.value):entry->kv.value;
+		return (void *)(hm->ktype.valueClone ? hm->ktype.valueClone(hm->ktenv,entry->kv.value):entry->kv.value);
 	}
 	return NULL;
 }
-const void *
+void *
 wcHashMapRemove(struct wcHashMap *hm,const void *key)
 {
 	struct wcHashMapEntry * entry;
 	unsigned tkey = hm->ktype.hashFunc(hm->ktenv,key);
 	int i=0;
-	const void *value = NULL;
+	void *value = NULL;
 	for(;i<hm->tblen;i++){
 		if(tkey <= hm->tbs[i]->hashkey){
 			entry = _hmtRemove(hm,i,tkey);
 			if(entry){
-				value = hm->ktype.valueClone ? hm->ktype.valueClone(hm->ktenv,entry->kv.value):entry->kv.value;
+				value = (void *)(hm->ktype.valueClone ? hm->ktype.valueClone(hm->ktenv,entry->kv.value):entry->kv.value);
 				free(entry);
 			}
 			break;
