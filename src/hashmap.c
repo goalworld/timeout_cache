@@ -53,6 +53,7 @@ wcHashMapInsert(struct wcHashMap * hm,const void *key,const void *value)
 	for(;i<hm->tblen;i++){
 		if(entry->tkey <= hm->tbs[i]->hashkey){
 			_hmtInsert(hm,i,entry->tkey,entry);
+			break;
 		}
 	}
 	return 0;
@@ -69,7 +70,7 @@ wcHashMapQuery(struct wcHashMap *hm,const void *key)
 			break;
 		}
 	}
-	if(entry->kv.value){
+	if(entry){
 		return (void *)(hm->ktype.valueClone ? hm->ktype.valueClone(hm->ktenv,entry->kv.value):entry->kv.value);
 	}
 	return NULL;

@@ -44,16 +44,15 @@ TET_new( int type)
 	p->timeoutCache = p->toCahe.New();
 	struct wcHashMapType whmt;
 	memset(&whmt,0,sizeof(whmt));
+	whmt.hashFunc = hashFunc;
 	p->hmap = wcHashMapNew(whmt,NULL);
 	return p;
 }
 void 
 TET_del(struct ToEntryTable *txt)
 {
-	printf("%p\n",txt );
 	txt->toCahe.Del(txt->timeoutCache);
 	wcHashMapDelete(txt->hmap);
-	
 	free(txt);
 }
 static void
