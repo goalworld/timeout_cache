@@ -55,7 +55,7 @@ main(int argc,char * argv[])
 	for(i=1;i<=len;i++){
 		data.data = (void *)i;
 		data.sz = 0;
-		TET_insertEntry(tet,i,data,rand()%1024);
+		TET_insertEntry(tet,i,data,rand()%10240);
 		if(i%(len/10) == 0 && i!=0){
 			clock_t now = clock();
 			printf("added %d ....difclock:%ld ms\n",i,now-pre );
@@ -85,7 +85,7 @@ main(int argc,char * argv[])
 	int num = 0;
 	int ernum=0;
 	begin = pre = clock();
-	for(i=0;i<10;i++){
+	for(i=0;i<30;i++){
 		num += (ernum = TET_onTimer(tet,1));
 		int now = clock();
 		df = now-pre;

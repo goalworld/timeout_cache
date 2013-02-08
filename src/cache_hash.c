@@ -26,7 +26,7 @@ struct HashList{
 	int numItem;
 
 };
-#define HASH_FUNC(x) ( ((long long)(x)*21)%HASH_SET_S )//multiply prime number make more hash
+#define HASH_FUNC(x) ( ((x)*7)%HASH_SET_S )//multiply prime number make more hash
 //(((int)( (((x)*618%1000)/1000)*HASH_SET_S))) 
 void * 
 hashListNew()
@@ -146,6 +146,7 @@ _listInsert(struct _List *list,unsigned key,struct UserData data,unsigned timeou
 	}else{
 		list->head = p;
 		list->tail = p;
+		list->preInsert = p;
 	}
 	list->preInsert = p;
 	return p;
