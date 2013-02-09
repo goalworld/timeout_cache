@@ -28,7 +28,7 @@ struct ToEntryTable
 	void * timeoutCache;
 	struct ToCache toCahe;
 };
-unsigned 	
+static unsigned 	
 hashFunc(void *env,const void *key)
 {
 	return (unsigned)key*7;
