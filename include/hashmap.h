@@ -31,6 +31,7 @@ struct wcHashMap
 	void * ktenv;
 	struct wcHashMapTable** tbs;
 	unsigned tblen;
+	unsigned tbcap;
 };
 struct wcHashMap * wcHashMapNew(struct wcHashMapType hmt,void *hmtenv);
 void 	wcHashMapDelete(struct wcHashMap * hm);

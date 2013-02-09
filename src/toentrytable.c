@@ -20,15 +20,14 @@ struct ToCache
 				tocache->Remove = type##Remove;\
 				tocache->OnTimer = type##OnTimer;
 
-
-
 struct ToEntryTable
 {
 	struct wcHashMap *hmap;
 	void * timeoutCache;
 	struct ToCache toCahe;
 };
-unsigned 	hashFunc(void *env,const void *key)
+unsigned 	
+hashFunc(void *env,const void *key)
 {
 	return (unsigned)key*7;
 }

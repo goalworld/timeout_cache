@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <memory.h>
 #include "hashmap.h"
-
+#define MAX_LENGTH 1024*1024
 
 static struct wcHashMapTable *  _hmtNew(unsigned key,unsigned sz);
 static void _hmtDelete(struct wcHashMap * hm,struct wcHashMapTable * hmt);
@@ -11,7 +11,7 @@ static void _hmtDetach(struct wcHashMap *hm,int lindex,int rindex);
 static struct wcHashMapEntry *  _hmtRemove(struct wcHashMap * hm,int lindex,unsigned key);
 static struct wcHashMapEntry *  _hmtQuery(struct wcHashMap * hm,int lindex,unsigned key);
 static int _hmtInsert(struct wcHashMap * hm,int index,unsigned key ,struct wcHashMapEntry * entry);
-
+static void _hmtNeedDetach(struct wcHashMap  *hm,unsigned index);
 
 
 
@@ -23,6 +23,7 @@ wcHashMapNew(struct wcHashMapType hmt,void *hmtenv)
 	hm->ktenv = hmtenv;
 	hm->ktype = hmt;
 	hm->tblen = 4;
+	hm->tbcap = 4;
 	hm->tbs = malloc(sizeof(void*)*(hm->tblen));
 	unsigned i = 0;
 	unsigned df = 0xffffffff/hm->tblen;
@@ -133,14 +134,19 @@ static int
 _hmtInsert(struct wcHashMap * hm,int index,unsigned key ,struct wcHashMapEntry * entry)
 {
 	struct wcHashMapTable *hmt = hm->tbs[index];
-	if(hmt->cap == hmt->used){
-		_hmtReHash(hm,index);
-		hmt = hm->tbs[index];
-	}
+	
 	int i = hmtHashFunc(hmt,key);
 	entry->next = hmt->etys[i];
 	hmt->etys[i] = entry;
 	hmt->used++;
+	if(hmt->cap == hmt->used){
+		if( hmt->cap <= MAX_LENGTH ){
+			_hmtReHash(hm,index);
+		}else{
+			_hmtNeedDetach(hm,index);	
+		}
+		
+	}
 	return 0;
 }
 static struct wcHashMapEntry *  
@@ -177,7 +183,20 @@ _hmtRemove(struct wcHashMap * hm,int index,unsigned key)
 	}
 	return NULL;
 }
-
+static void
+_hmtNeedDetach(struct wcHashMap  *hm,unsigned index)
+{
+	if(hm->tblen == hm->tbcap){
+		hm->tbcap*=2;
+		hm->tbs = realloc(hm->tbs,hm->tbcap * sizeof(void *));
+	}
+	memmove(hm->tbs[index+1],hm->tbs[index],hm->tblen-index);
+	hm->tblen+1;
+	unsigned pre = 0;
+	if(index != 0) pre =hm->tbs[index+1]->hashkey;
+	hm->tbs[index] = _hmtNew((hm->tbs[index+1]->hashkey -pre)/2,hm->tbs[index+1]->cap/2);
+	_hmtDetach(hm,index,index+1);
+}
 static void
 _hmtDetach(struct wcHashMap *hm,int lindex,int rindex)
 {
