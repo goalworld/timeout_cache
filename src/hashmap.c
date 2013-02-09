@@ -33,6 +33,18 @@ wcHashMapNew(struct wcHashMapType hmt,void *hmtenv)
 	}
 	return hm;
 }
+static inline unsigned
+ first_hash_func(struct wcHashMap * hm,const void *inkey){
+ 	unsigned key = hm->ktype.hashFunc(hm->ktenv,inkey);
+	key += ~(key << 15);
+    key ^=  (key >> 10);
+    key +=  (key << 3);
+    key ^=  (key >> 6);
+    key += ~(key << 11);
+    key ^=  (key >> 16);
+    return key;
+ }
+
 void 	
 wcHashMapDelete(struct wcHashMap * hm)
 {
@@ -49,7 +61,7 @@ wcHashMapInsert(struct wcHashMap * hm,const void *key,const void *value)
 	struct wcHashMapEntry * entry = malloc(sizeof(struct wcHashMapEntry));
 	entry->kv.key =   hm->ktype.keyClone   ? hm->ktype.keyClone(hm->ktenv,key):key;
 	entry->kv.value = hm->ktype.valueClone ? hm->ktype.valueClone(hm->ktenv,value):value;
-	entry->tkey = hm->ktype.hashFunc(hm->ktenv,key);
+	entry->tkey = first_hash_func(hm,key);
 	entry->next = NULL;
 	int i=0;
 	for(;i<hm->tblen;i++){
@@ -64,7 +76,7 @@ void *
 wcHashMapQuery(struct wcHashMap *hm,const void *key)
 {
 	struct wcHashMapEntry * entry;
-	unsigned tkey = hm->ktype.hashFunc(hm->ktenv,key);
+	unsigned tkey =first_hash_func(hm,key);
 	int i=0;
 	for(;i<hm->tblen;i++){
 		if(tkey <= hm->tbs[i]->hashkey){
@@ -81,7 +93,7 @@ void *
 wcHashMapRemove(struct wcHashMap *hm,const void *key)
 {
 	struct wcHashMapEntry * entry;
-	unsigned tkey = hm->ktype.hashFunc(hm->ktenv,key);
+	unsigned tkey = first_hash_func(hm,key);
 	int i=0;
 	void *value = NULL;
 	for(;i<hm->tblen;i++){
