@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+ #include <sys/time.h>
 /*
 #ifdef WIN32
 #include <windows.h>
@@ -27,6 +28,13 @@ test_sleep(double delay)
 	select (0, 0, 0, 0, &tv);
 #endif
 }*/
+double
+rainGetTime()
+{
+	struct timeval time;
+	gettimeofday(&time,(void *)0);
+	return time.tv_sec *1E6 + time.tv_usec ;
+}
 int 
 main(int argc,char * argv[])
 {
@@ -40,7 +48,6 @@ main(int argc,char * argv[])
 		return 1;
 	}
 
-
 	struct ToEntryTable * tet = TET_new(TET_HASH);
 	if(!tet){
 	  printf("tet create fail!");
@@ -49,7 +56,7 @@ main(int argc,char * argv[])
 	int i;
 	srand(time(NULL));
 	struct UserData data;
-	clock_t pre  =  clock(),df,begin;
+	double pre  = rainGetTime(),now,df,begin;
 	begin= pre;
 
 	printf("(1)INSERT: adding entry max number : %d please wait\n",len);
@@ -58,17 +65,17 @@ main(int argc,char * argv[])
 		data.sz = 0;
 		TET_insertEntry(tet,i,data,rand()%10240);
 		if(i%(len/10) == 0 && i!=0){
-			clock_t now = clock();
-			printf("added %d ....difclock:%ld ms\n",i,now-pre );
+			now = rainGetTime();
+			printf("added %d ....difclock:%f us\n",i,now-pre );
 			pre = now;
 		}
 	}
-	df = clock()-begin;
-	printf("\n\n\nINSERT-RESULT:added entry max number : %d all:%ld ms  one:%f ms\n\n\n ",len,df,(double)(df)/len);
+	df = rainGetTime()-begin;
+	printf("\n\n\nINSERT-RESULT:added entry max number : %d all:%f us  one:%f us\n\n\n ",len,df,(double)(df)/len);
 
 	puts("(2):QUERY: wait a moment now is testing query"); 
 	int ret =0;
-	pre = clock();
+	pre = rainGetTime();
 	int numq = 100;
 	for(i=0;i<numq;i++){
 		int d = rand()%len;
@@ -79,25 +86,25 @@ main(int argc,char * argv[])
 		}
 
 	}
-	df = clock()-pre;
-	printf("\n\n\nQUERY-RESULT : num:%d clock:%ld ms oneclock:%f ms\n\n\n",numq,df,(double)(df)/(double)(numq));
+	df = rainGetTime()-pre;
+	printf("\n\n\nQUERY-RESULT : num:%d clock:%f us oneclock:%f us\n\n\n",numq,df,(double)(df)/(double)(numq));
 
 	puts("\n\n\n (3):TIMEOUT: wait a moment now is testing timeout-remove"); 
 	int num = 0;
 	int ernum=0;
-	begin = pre = clock();
+	begin = pre = rainGetTime();
 	for(i=0;i<30;i++){
 		num += (ernum = TET_onTimer(tet,1));
-		int now = clock();
+		now = rainGetTime();
 		df = now-pre;
-		printf("TIMEOUT-RESULT: TimePass : %d s :DelNum:%d clock:%ld ms oneclock:%f ms\n",i,ernum,df,(double)(df)/(double)(ernum));
+		printf("TIMEOUT-RESULT: TimePass : %d s :DelNum:%d clock:%f us oneclock:%f us\n",i,ernum,df,(double)(df)/(double)(ernum));
 		pre = now;
 	}
-	df = clock()-begin;
-	printf("\n\n\nTIMEOUT-RESULT: TimePass : %d s :DelNum:%d clock:%ld ms oneclock:%f ms\n\n\n",i,num,df,(double)(df)/(double)(num));
+	df = rainGetTime()-begin;
+	printf("\n\n\nTIMEOUT-RESULT: TimePass : %d s :DelNum:%d clock:%f us oneclock:%f us\n\n\n",i,num,df,(double)(df)/(double)(num));
 
 	puts("\n\n\n(4)REMOVE: wait a moment now is testing remove");
-	pre = clock(); 
+	pre = rainGetTime(); 
 	int numd = 100;
 	for(i=0;i<numd;i++){
 		int d = rand()%len;
@@ -107,8 +114,8 @@ main(int argc,char * argv[])
 			printf("[%8d->%8s] %s",d,"nil",i%4 == 0?"\n":"");
 		}
 	}
-	df = clock()-pre;
-	printf("\n\n\nREMOVE-RESULT : num:%d clock:%ld ms oneclock:%f ms\n\n\n",numd,df,(double)(df)/(double)(numd));
+	df = rainGetTime()-pre;
+	printf("\n\n\nREMOVE-RESULT : num:%d clock:%f us oneclock:%f us\n\n\n",numd,df,(double)(df)/(double)(numd));
 	TET_del(tet);
 	return 0;
 }
