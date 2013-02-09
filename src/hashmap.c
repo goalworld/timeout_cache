@@ -140,11 +140,11 @@ _hmtInsert(struct wcHashMap * hm,int index,unsigned key ,struct wcHashMapEntry *
 	hmt->etys[i] = entry;
 	hmt->used++;
 	if(hmt->cap == hmt->used){
-		if( hmt->cap <= MAX_LENGTH ){
+		//if( hmt->cap <= MAX_LENGTH ){
 			_hmtReHash(hm,index);
-		}else{
+	//	}else{
 			_hmtNeedDetach(hm,index);	
-		}
+	//	}
 		
 	}
 	return 0;
