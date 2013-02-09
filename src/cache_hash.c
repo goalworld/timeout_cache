@@ -14,8 +14,8 @@ static void _listDestroy(struct _List *list);
 static struct _ListItem * _listInsert(struct _List *list,unsigned key,struct UserData data,unsigned timeout);
 static void _listRemove(struct _List *list,struct _ListItem * litem);
 static int _listOnTimer(struct _List *list,unsigned times,remove_cb cb,void *cbarg);
-static void _listRealInsert(struct _List *list,struct _ListItem*item);
-static void _listRealInsertFromTail(struct _List *list,struct _ListItem*item);
+//static void _listRealInsert(struct _List *list,struct _ListItem*item);
+//static void _listRealInsertFromTail(struct _List *list,struct _ListItem*item);
 static void 
 _listRealInsertUpAB(struct _List *list,struct _ListItem *A,struct _ListItem *B,struct _ListItem*item);
 static void 
@@ -32,7 +32,7 @@ void *
 hashListNew()
 {
 	struct HashList * hl= malloc(sizeof(struct HashList));
-	int i;
+	int i=0;
 	for(;i<HASH_SET_S;i++){
 		_listInit(&hl->lists[i]);
 	}
@@ -42,7 +42,7 @@ void
 hashListDel(void *env)
 {
 	struct HashList * hl= (struct HashList *)env;
-	int i;
+	int i=0;
 	for(;i<HASH_SET_S;i++){
 		_listDestroy(&hl->lists[i]);
 	}
@@ -91,13 +91,6 @@ hashListOnTimer(void *arg,unsigned times,remove_cb cb,void *cbarg)
 		return num;
 	}
 	return 0;
-}
-//---------------------------------------------------------------------------------
-static struct Entry 
-hashListGetEntryByItem( void *item)
-{
-	struct _ListItem * litem = (struct _ListItem *)(item);
-	return litem->ety;
 }
 static void 
 _listInit(struct _List *list)
@@ -203,7 +196,7 @@ _listRealInsertDwonAB(struct _List *list,struct _ListItem *A,struct _ListItem *B
 		cut = cut->pre;
 	}while(cut != A->pre);
 }
-static void
+/*static void
 _listRealInsert(struct _List *list,struct _ListItem*item)
 {
 	struct _ListItem *cut = list->head;
@@ -254,7 +247,7 @@ _listRealInsertFromTail(struct _List *list,struct _ListItem*item)
 		}
 		cut = cut->pre;
 	}
-}
+}*/
 static void
 _listRemove(struct _List *list,struct _ListItem * litem)
 {

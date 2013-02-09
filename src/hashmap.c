@@ -76,7 +76,7 @@ wcHashMapInsert(struct wcHashMap * hm,const void *key,const void *value)
 void *
 wcHashMapQuery(struct wcHashMap *hm,const void *key)
 {
-	struct wcHashMapEntry * entry;
+	struct wcHashMapEntry * entry = NULL;
 	unsigned tkey =first_hash_func(hm,key);
 	int i=0;
 	for(;i<hm->tblen;i++){

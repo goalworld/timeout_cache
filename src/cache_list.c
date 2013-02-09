@@ -50,12 +50,6 @@ listDel(void *list)
 	}
 	free(list);
 }
-static struct Entry 
-listGetEntryByItem( void *item)
-{
-	struct ListItem * litem = (struct ListItem *)(item);
-	return litem->ety;
-}
 static void listRealInsertFromTail(struct List *list,struct ListItem*item);
 static void listRealInsert(struct List *list,struct ListItem*item);
 static void *
@@ -184,5 +178,6 @@ listOnTimer(void *arg,unsigned times,remove_cb cb,void *cbarg)
 				list->minTimeout = list->head->ety.timeout;
 		}
 	}
+	return num;
 
 }

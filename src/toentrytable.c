@@ -19,6 +19,8 @@ struct ToCache
 				tocache->Insert = type##Insert;\
 				tocache->Remove = type##Remove;\
 				tocache->OnTimer = type##OnTimer;
+				
+int initToCache( struct ToCache * p,int type);
 
 struct ToEntryTable
 {

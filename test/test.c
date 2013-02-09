@@ -43,7 +43,8 @@ main(int argc,char * argv[])
 
 	struct ToEntryTable * tet = TET_new(TET_HASH);
 	if(!tet){
-		return ;
+	  printf("tet create fail!");
+		return 1;
 	}
 	int i;
 	srand(time(NULL));
@@ -98,7 +99,7 @@ main(int argc,char * argv[])
 	puts("\n\n\n(4)REMOVE: wait a moment now is testing remove");
 	pre = clock(); 
 	int numd = 100;
-	for(i=0;i<100;i++){
+	for(i=0;i<numd;i++){
 		int d = rand()%len;
 		if( (ret = TET_removeEntry(tet,d,&data)) == 0 ){
 			printf("[%8d->%8d] %s",d,(int)data.data,i%4 == 0?"\n":"");
