@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <memory.h>
 #include "hashmap.h"
+#include <assert.h>
 #define MAX_LENGTH 1024*1024
 
 static struct wcHashMapTable *  _hmtNew(unsigned key,unsigned sz);
@@ -140,11 +141,11 @@ _hmtInsert(struct wcHashMap * hm,int index,unsigned key ,struct wcHashMapEntry *
 	hmt->etys[i] = entry;
 	hmt->used++;
 	if(hmt->cap == hmt->used){
-		//if( hmt->cap <= MAX_LENGTH ){
+		if( hmt->cap <= MAX_LENGTH/2 ){
 			_hmtReHash(hm,index);
-	//	}else{
-			_hmtNeedDetach(hm,index);	
-	//	}
+		}else{
+			_hmtNeedDetach(hm,index);
+		}
 		
 	}
 	return 0;
@@ -190,11 +191,11 @@ _hmtNeedDetach(struct wcHashMap  *hm,unsigned index)
 		hm->tbcap*=2;
 		hm->tbs = realloc(hm->tbs,hm->tbcap * sizeof(void *));
 	}
-	memmove(hm->tbs[index+1],hm->tbs[index],hm->tblen-index);
-	hm->tblen+1;
+	memmove(hm->tbs+index+1,hm->tbs+index,(hm->tblen-index)*sizeof(void *));
+	hm->tblen++;
 	unsigned pre = 0;
-	if(index != 0) pre =hm->tbs[index+1]->hashkey;
-	hm->tbs[index] = _hmtNew((hm->tbs[index+1]->hashkey -pre)/2,hm->tbs[index+1]->cap/2);
+	if(index != 0) pre =hm->tbs[index-1]->hashkey;
+	hm->tbs[index] = _hmtNew((hm->tbs[index+1]->hashkey + pre)/2,hm->tbs[index+1]->cap/2);
 	_hmtDetach(hm,index,index+1);
 }
 static void
@@ -224,12 +225,12 @@ _hmtDetach(struct wcHashMap *hm,int lindex,int rindex)
 static void  
 _hmtReHash(struct wcHashMap * hm,int index)
 {
-	struct wcHashMapEntry * cut,*pre,*tmp;
+	struct wcHashMapEntry * cut,*tmp;
 	struct wcHashMapTable * hmt = hm->tbs[index];
 	hm->tbs[index] = _hmtNew(hmt->hashkey,hmt->cap*2);
 	int i;
 	for(i=0; i<hmt->cap;i++){
-		cut = hmt->etys[i]; pre = NULL;
+		cut = hmt->etys[i];
 		while(cut){
 			tmp = cut;
 			cut = cut->next;
