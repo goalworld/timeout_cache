@@ -1,26 +1,26 @@
 
-struct ListItem
+struct list_item
 {
-	struct Entry ety;
-	struct ListItem* next;
-	struct ListItem* pre;
+	struct TET_entry ety;
+	struct list_item* next;
+	struct list_item* pre;
 };
-struct List
+struct list
 {
-	struct ListItem * head,*tail;
+	struct list_item * head,*tail;
 	unsigned minTimeout;
 	unsigned times;
 	int numItem;
 };
 static inline void
-listItemAdd(struct List *list){
+list_item_add(struct list *list){
 	if(list->numItem == 0){
 		//startTimer();
 	}
 	list->numItem ++;
 }
 static inline void
-listItemSub(struct List *list){
+list_item_sub(struct list *list){
 	list->numItem--;
 	if(list->numItem == 0){
 		list->times = 0;
@@ -29,9 +29,9 @@ listItemSub(struct List *list){
 	}
 }
 static void *
-listNew()
+list_new()
 {
-	struct List *list = malloc(sizeof(struct List));
+	struct list *list = malloc(sizeof(struct list));
 	list->head = NULL;
 	list->tail = NULL;
 	list->numItem = 0;
@@ -40,9 +40,9 @@ listNew()
 	return list;
 }
 static void 
-listDel(void *list)
+list_delete(void *list)
 {
-	struct ListItem *next,*cut = ((struct List *)(list))->head;
+	struct list_item *next,*cut = ((struct list *)(list))->head;
 	while(cut){
 		next = cut->next;
 		free(cut);
@@ -50,13 +50,13 @@ listDel(void *list)
 	}
 	free(list);
 }
-static void listRealInsertFromTail(struct List *list,struct ListItem*item);
-static void listRealInsert(struct List *list,struct ListItem*item);
+static void list_real_insert_from_tail(struct list *list,struct list_item*item);
+static void list_real_insert(struct list *list,struct list_item*item);
 static void *
-listInsert(void *arg,unsigned key,struct UserData data,unsigned timeout)
+list_insert(void *arg,unsigned key,struct user_data data,unsigned timeout)
 {
-	struct List *list = (struct List *)(arg);
-	struct ListItem *p = malloc(sizeof(struct ListItem));
+	struct list *list = (struct list *)(arg);
+	struct list_item *p = malloc(sizeof(struct list_item));
 	p->ety.key = key;
 	p->ety.timeout = timeout+list->times;
 	p->ety.data = data;
@@ -68,23 +68,23 @@ listInsert(void *arg,unsigned key,struct UserData data,unsigned timeout)
 	if(list->head){
 		unsigned t = list->head->ety.timeout + list->tail->ety.timeout;
 		if(p->ety.timeout >= t/2){
-			listRealInsertFromTail(list,p);
+			list_real_insert_from_tail(list,p);
 			return p;
 		}
 	}
-	listRealInsert(list,p);
-	listItemAdd(list);
+	list_real_insert(list,p);
+	list_item_add(list);
 	return p;
 }
 static void
-listRealInsert(struct List *list,struct ListItem*item)
+list_real_insert(struct list *list,struct list_item*item)
 {
 	if(!list->head){
 		list->head = item;
 		list->tail = item;
 		return;
 	}
-	struct ListItem *cut = list->head;
+	struct list_item *cut = list->head;
 	while(1){
 		//optimize 1 cpu idle case itemptr to array 2binary search timeout average chose tial or head
 		if(cut->ety.timeout >= item->ety.timeout){
@@ -108,14 +108,14 @@ listRealInsert(struct List *list,struct ListItem*item)
 	}
 }
 static void
-listRealInsertFromTail(struct List *list,struct ListItem*item)
+list_real_insert_from_tail(struct list *list,struct list_item*item)
 {
 	if(!list->head){
 		list->head = item;
 		list->tail = item;
 		return;
 	}
-	struct ListItem *cut = list->tail;
+	struct list_item *cut = list->tail;
 	while(1){
 		//optimize 1 cpu idle case itemptr to array 2binary search timeout average chose tial or head
 		if(cut->ety.timeout <= item->ety.timeout){
@@ -139,10 +139,10 @@ listRealInsertFromTail(struct List *list,struct ListItem*item)
 	}
 }
 static void
-listRemove(void *arg,void * item)
+list_remove(void *arg,void * item)
 {
-	struct List *list = (struct List *)(arg);
-	struct ListItem * litem = (struct ListItem *)(item);
+	struct list *list = (struct list *)(arg);
+	struct list_item * litem = (struct list_item *)(item);
 	if(litem->pre)litem->pre->next = litem->next;
 	if(litem->next)litem->next->pre = litem->pre;
 	if(litem == list->head){
@@ -152,21 +152,21 @@ listRemove(void *arg,void * item)
 	}else if(litem == list->tail){
 		list->tail = litem->pre;
 	}
-	listItemSub(list);
+	list_item_sub(list);
 	free(litem);
 }
 static int
-listOnTimer(void *arg,unsigned times,remove_cb cb,void *cbarg)
+list_on_timer(void *arg,unsigned times,remove_cb cb,void *cbarg)
 {
-	struct List *list = (struct List *)(arg);
+	struct list *list = (struct list *)(arg);
 	int num = 0;
 	if( list->numItem > 0 ){
 		list->times+=times;
 		if(list->times >= list->minTimeout){
 			while( list->head->ety.timeout <= list->times ){
-				struct ListItem *tmp = list->head;
+				struct list_item *tmp = list->head;
 				list->head = tmp->next;
-				listItemSub(list);
+				list_item_sub(list);
 				num++;
 				cb(cbarg,tmp->ety);
 				free(tmp);

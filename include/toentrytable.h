@@ -1,13 +1,13 @@
 #ifndef _ENTRY_MAP_TIMEOUT_H_
 #define _ENTRY_MAP_TIMEOUT_H_
-struct ToEntryTable;
+struct TET_table;
 
-struct UserData{
+struct user_data{
 	void* data;
 	unsigned sz;
 };
-struct Entry{
-	struct UserData data;
+struct TET_entry{
+	struct user_data data;
 	unsigned key;
 	unsigned timeout;
 };
@@ -15,10 +15,10 @@ enum  {
 	TET_LIST,
 	TET_HASH
 };
-struct ToEntryTable *TET_new( int type);
-void TET_del(struct ToEntryTable *txt);
-int TET_insertEntry(struct ToEntryTable* tet, unsigned key,struct UserData data,unsigned  timeout);
-int TET_removeEntry(struct ToEntryTable* tet ,unsigned key,struct UserData *data);
-int TET_queryEntry(struct ToEntryTable* tet ,unsigned key,struct UserData *data);
-int TET_onTimer(struct ToEntryTable *tet,unsigned times);
+struct TET_table *TET_new( int type);
+void TET_delete(struct TET_table *txt);
+int TET_insert_entry(struct TET_table* tet, unsigned key,struct user_data data,unsigned  timeout);
+int TET_remove_entry(struct TET_table* tet ,unsigned key,struct user_data *data);
+int TET_query_entry(struct TET_table* tet ,unsigned key,struct user_data *data);
+int TET_on_timer(struct TET_table *tet,unsigned times);
 #endif

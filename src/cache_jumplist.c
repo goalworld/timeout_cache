@@ -1,6 +1,6 @@
 struct JListItem
 {
-	struct Entry ety;
+	struct TET_entry ety;
 	struct JListItem * items;
 	int items_len;
 };
@@ -26,7 +26,7 @@ void jlistDel( void * env)
 	free(env);
 }
 static void * 
-jlistInsert(void *arg,int key,struct UserData data,unsigned timeout)
+jlistInsert(void *arg,int key,struct user_data data,unsigned timeout)
 {
 
 }
@@ -36,7 +36,7 @@ jlistRemove(void *arg,void * item)
 
 }
 static void 
-jlistOnTimer(void *arg,unsigned times,void(*cb)(void *arg,struct Entry try),void *cbarg)
+jlistOnTimer(void *arg,unsigned times,void(*cb)(void *arg,struct TET_entry try),void *cbarg)
 {
 	
 }

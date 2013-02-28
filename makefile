@@ -1,15 +1,13 @@
 CC = gcc
-SRCS = ./test/test.c ./src/toentrytable.c ./src/hashmap.c
+SRCS = ./test/test.c ./src/toentrytable.c 
 DEBUG=-g 
 CFALGS = -O3 -Wall -g3
 INC_DIR = -I./include
-all:test-realease test-debug hash_test
+all:test-realease test-debug
 
 test-realease:$(SRCS)
-	$(CC) $(CFALGS) $(INC_DIR) -o $@ $^ -pg
+	$(CC) $(CFALGS) $(INC_DIR) -o $@ $^ -pg -lwod
 test-debug:$(SRCS)
-	$(CC) $(DEBUG) $(INC_DIR) -o $@ $^ -pg
-hash_test:./src/toentrytable.c ./src/hashmap.c ./test/hashmap_test.c
-	$(CC) $(CFALGS) $(INC_DIR) -o $@ $^ -pg
+	$(CC) $(DEBUG) $(INC_DIR) -o $@ $^ -pg -lwod
 clean:
-	rm test-* hash_test*
+	rm test-*

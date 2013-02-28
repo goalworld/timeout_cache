@@ -11,8 +11,8 @@
 #include "../include/hashmap.h"
 #include <time.h>
 #include <memory.h>
- #include <assert.h>
- #include <sys/time.h>
+#include <assert.h>
+#include <sys/time.h>
 static unsigned 	
 hashFunc(void *env,const void *key)
 {

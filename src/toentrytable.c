@@ -1,97 +1,98 @@
 #include "toentrytable.h"
-#include "hashmap.h"
+#include <wod_hashmap.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
+#include <stddef.h>
 #define HASH_SIZE 10* 10240
-typedef void(*remove_cb)(void *arg,struct Entry try) ;
+typedef void(*remove_cb)(void *arg,struct TET_entry try) ;
 struct ToCache
 {
-	void *(*New)();
-	void (*Del)(void *);
-	void *(*Insert)(void *list,unsigned key,struct UserData data,unsigned timeout);
-	void (*Remove)(void *list,void * litem);
-	int(* OnTimer)(void *list,unsigned timeout,remove_cb cb,void *arg);
+	void *(*new)();
+	void (*delete)(void *);
+	void *(*insert)(void *list,unsigned key,struct user_data data,unsigned timeout);
+	void (*remove)(void *list,void * litem);
+	int(* on_timer)(void *list,unsigned timeout,remove_cb cb,void *arg);
 };
 #define SET_TO_CACHE(tocache,type) \
-				tocache->New = type##New;\
-				tocache->Del = type##Del;\
-				tocache->Insert = type##Insert;\
-				tocache->Remove = type##Remove;\
-				tocache->OnTimer = type##OnTimer;
+				tocache->new = type##_new;\
+				tocache->delete = type##_delete;\
+				tocache->insert = type##_insert;\
+				tocache->remove = type##_remove;\
+				tocache->on_timer = type##_on_timer;
 				
 int initToCache( struct ToCache * p,int type);
 
-struct ToEntryTable
+struct TET_table
 {
-	struct wcHashMap *hmap;
+	struct wod_hash_map *hmap;
 	void * timeoutCache;
 	struct ToCache toCahe;
 };
 static unsigned 	
 hashFunc(void *env,const void *key)
 {
-	return (unsigned)key*7;
+	return (unsigned)(ptrdiff_t)key * 7;
 }
 
-struct ToEntryTable * 
+struct TET_table * 
 TET_new( int type)
 {
-	struct ToEntryTable *p = (struct ToEntryTable *)malloc(sizeof(struct ToEntryTable));
+	struct TET_table *p = (struct TET_table *)malloc(sizeof(struct TET_table));
 	if( initToCache(&p->toCahe,type) != 0){
 		free(p);
 		return NULL;
 	}
-	p->timeoutCache = p->toCahe.New();
-	struct wcHashMapType whmt;
+	p->timeoutCache = p->toCahe.new();
+	struct wod_hash_map_type whmt;
 	memset(&whmt,0,sizeof(whmt));
-	whmt.hashFunc = hashFunc;
-	p->hmap = wcHashMapNew(whmt,NULL);
+	whmt.hash_func = hashFunc;
+	p->hmap = wod_hashmap_new(whmt,NULL);
 	return p;
 }
 void 
-TET_del(struct ToEntryTable *txt)
+TET_delete(struct TET_table *txt)
 {
-	txt->toCahe.Del(txt->timeoutCache);
-	wcHashMapDelete(txt->hmap);
+	txt->toCahe.delete(txt->timeoutCache);
+	wod_hashmap_delete(txt->hmap);
 	free(txt);
 }
 static void
-notifyListItemRemove(void *arg ,struct Entry ety)
+notifyListItemRemove(void *arg ,struct TET_entry ety)
 {
-	struct ToEntryTable* tet =( struct ToEntryTable* )arg;
+	struct TET_table* tet =( struct TET_table* )arg;
 	unsigned key = ety.key;
-	wcHashMapRemove(tet->hmap,(void *)key);
+	wod_hashmap_remove(tet->hmap,(void *)(ptrdiff_t)key);
 }
 
 int 
-TET_onTimer(struct ToEntryTable *tet,unsigned times){
-	return tet->toCahe.OnTimer(tet->timeoutCache,times,notifyListItemRemove,tet);
+TET_on_timer(struct TET_table *tet,unsigned times){
+	return tet->toCahe.on_timer(tet->timeoutCache,times,notifyListItemRemove,tet);
 }
 int
-TET_insertEntry(struct ToEntryTable* tet, unsigned key,struct UserData data,unsigned timeout)
+TET_insert_entry(struct TET_table* tet, unsigned key,struct user_data data,unsigned timeout)
 {
-	void * item = tet->toCahe.Insert(tet->timeoutCache,key,data,timeout);
-	wcHashMapInsert(tet->hmap,(void *)key,item);
+	void * item = tet->toCahe.insert(tet->timeoutCache,key,data,timeout);
+	wod_hashmap_insert(tet->hmap,(void *)(ptrdiff_t)key,item);
 	return 0;
 }
 int
-TET_removeEntry(struct ToEntryTable* tet ,unsigned key,struct UserData *data)
+TET_remove_entry(struct TET_table* tet ,unsigned key,struct user_data *data)
 {
-	void * item = wcHashMapRemove(tet->hmap,(void *)key);
+	void * item = wod_hashmap_remove(tet->hmap,(void *)(ptrdiff_t)key);
 	if(item){
-		*data = ((struct Entry *)item)->data;
-		tet->toCahe.Remove(tet->timeoutCache,item);
+		*data = ((struct TET_entry *)item)->data;
+		tet->toCahe.remove(tet->timeoutCache,item);
 		return 0;
 	}
 	return -1;
 }
 int
-TET_queryEntry(struct ToEntryTable* tet ,unsigned key,struct UserData *data)
+TET_query_entry(struct TET_table* tet ,unsigned key,struct user_data *data)
 {
-	void * item = wcHashMapQuery(tet->hmap,(void *)key);
+	void * item = wod_hashmap_query(tet->hmap,(void *)(ptrdiff_t)key);
 	if(item){
-		*data = ((struct Entry *)item)->data;
+		*data = ((struct TET_entry *)item)->data;
 		return 0;
 	}
 	return -1;
@@ -105,7 +106,7 @@ initToCache( struct ToCache * p,int type)
 		SET_TO_CACHE(p,list);
 		return 0;
 	}else if(TET_HASH == type){
-		SET_TO_CACHE(p,hashList);
+		SET_TO_CACHE(p,hash_list);
 		return 0;
 	}
 	return -1;

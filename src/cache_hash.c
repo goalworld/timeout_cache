@@ -1,27 +1,27 @@
 #define HASH_SET_S 10240
-struct _ListItem
+struct _list_item
 {
-	struct Entry ety;
-	struct _ListItem* next;
-	struct _ListItem* pre;
+	struct TET_entry ety;
+	struct _list_item* next;
+	struct _list_item* pre;
 };
-struct _List
+struct _list
 {
-	struct _ListItem * head,*tail,*preInsert;
+	struct _list_item * head,*tail,*preInsert;
 };
-static void _listInit(struct _List *list);
-static void _listDestroy(struct _List *list);
-static struct _ListItem * _listInsert(struct _List *list,unsigned key,struct UserData data,unsigned timeout);
-static void _listRemove(struct _List *list,struct _ListItem * litem);
-static int _listOnTimer(struct _List *list,unsigned times,remove_cb cb,void *cbarg);
+static void _list_init(struct _list *list);
+static void _list_destroy(struct _list *list);
+static struct _list_item * _list_insert(struct _list *list,unsigned key,struct user_data data,unsigned timeout);
+static void _list_remove(struct _list *list,struct _list_item * litem);
+static int _list_on_timer(struct _list *list,unsigned times,remove_cb cb,void *cbarg);
 //static void _listRealInsert(struct _List *list,struct _ListItem*item);
 //static void _listRealInsertFromTail(struct _List *list,struct _ListItem*item);
 static void 
-_listRealInsertUpAB(struct _List *list,struct _ListItem *A,struct _ListItem *B,struct _ListItem*item);
+_list_real_insert_up_a2b(struct _list *list,struct _list_item *A,struct _list_item *B,struct _list_item*item);
 static void 
-_listRealInsertDwonAB(struct _List *list,struct _ListItem *A,struct _ListItem *B,struct _ListItem*item);
-struct HashList{
-	struct _List lists[HASH_SET_S];
+_list_real_insert_down_a2b(struct _list *list,struct _list_item *A,struct _list_item *B,struct _list_item*item);
+struct _hash_list{
+	struct _list lists[HASH_SET_S];
 	unsigned times;
 	int numItem;
 
@@ -29,31 +29,31 @@ struct HashList{
 #define HASH_FUNC(x) ( ((x)*7)%HASH_SET_S )//multiply prime number make more hash
 //(((int)( (((x)*618%1000)/1000)*HASH_SET_S))) 
 void * 
-hashListNew()
+hash_list_new()
 {
-	struct HashList * hl= malloc(sizeof(struct HashList));
+	struct _hash_list * hl= malloc(sizeof(struct _hash_list));
 	int i=0;
 	for(;i<HASH_SET_S;i++){
-		_listInit(&hl->lists[i]);
+		_list_init(&hl->lists[i]);
 	}
 	return hl;
 }
 void 
-hashListDel(void *env)
+hash_list_delete(void *env)
 {
-	struct HashList * hl= (struct HashList *)env;
+	struct _hash_list * hl= (struct _hash_list *)env;
 	int i=0;
 	for(;i<HASH_SET_S;i++){
-		_listDestroy(&hl->lists[i]);
+		_list_destroy(&hl->lists[i]);
 	}
 }
 void *
-hashListInsert(void *arg,unsigned key,struct UserData data,unsigned timeout)
+hash_list_insert(void *arg,unsigned key,struct user_data data,unsigned timeout)
 {
-	struct HashList * hl= (struct HashList *)arg;
+	struct _hash_list * hl= (struct _hash_list *)arg;
 	unsigned t = timeout+hl->times;
 	int hash = HASH_FUNC(t);
-	void *ret = _listInsert(&hl->lists[hash],key,data,t);
+	void *ret = _list_insert(&hl->lists[hash],key,data,t);
 	if(ret){
 		if(hl->numItem == 0){
 		//startTimer();
@@ -64,25 +64,25 @@ hashListInsert(void *arg,unsigned key,struct UserData data,unsigned timeout)
 }
 
 static void
-hashListRemove(void *arg,void *item)
+hash_list_remove(void *arg,void *item)
 {
-	struct _ListItem *litem = (struct _ListItem*)item;
-	struct HashList * hl= (struct HashList *)arg;
+	struct _list_item *litem = (struct _list_item*)item;
+	struct _hash_list * hl= (struct _hash_list *)arg;
 	int hash = HASH_FUNC(litem->ety.timeout);
-	_listRemove(&hl->lists[hash],litem);
+	_list_remove(&hl->lists[hash],litem);
 	if(--hl->numItem == 0){
 		hl->times = 0;
 		//stopTimer();
 	}
 }
 static int
-hashListOnTimer(void *arg,unsigned times,remove_cb cb,void *cbarg)
+hash_list_on_timer(void *arg,unsigned times,remove_cb cb,void *cbarg)
 {
-	struct HashList * hl= (struct HashList *)arg;
+	struct _hash_list * hl= (struct _hash_list *)arg;
 	if( hl->numItem > 0 ){
 		hl->times+=times;
 		int hash = HASH_FUNC(hl->times);
-		int num = _listOnTimer(&hl->lists[hash],hl->times,cb,cbarg);
+		int num = _list_on_timer(&hl->lists[hash],hl->times,cb,cbarg);
 		hl->numItem -= num;
 		if(hl->numItem == 0){
 			hl->times = 0;
@@ -93,16 +93,16 @@ hashListOnTimer(void *arg,unsigned times,remove_cb cb,void *cbarg)
 	return 0;
 }
 static void 
-_listInit(struct _List *list)
+_list_init(struct _list *list)
 {
 	list->head = NULL;
 	list->tail = NULL;
 	list->preInsert = NULL;
 }
 static void 
-_listDestroy(struct _List *list)
+_list_destroy(struct _list *list)
 {
-	struct _ListItem *next,*cut = list->head;
+	struct _list_item *next,*cut = list->head;
 	while(cut){
 		next = cut->next;
 		free(cut);
@@ -111,10 +111,10 @@ _listDestroy(struct _List *list)
 }
 
 
-static struct _ListItem *
-_listInsert(struct _List *list,unsigned key,struct UserData data,unsigned timeout)
+static struct _list_item *
+_list_insert(struct _list *list,unsigned key,struct user_data data,unsigned timeout)
 {
-	struct _ListItem *p = malloc(sizeof(struct _ListItem));
+	struct _list_item *p = malloc(sizeof(struct _list_item));
 	p->ety.key = key;
 	p->ety.timeout = timeout;
 	p->ety.data = data;
@@ -124,16 +124,16 @@ _listInsert(struct _List *list,unsigned key,struct UserData data,unsigned timeou
 		if(list->preInsert->ety.timeout > timeout){
 			unsigned t = list->head->ety.timeout + list->preInsert->ety.timeout;
 			if(timeout <= t/2){
-				_listRealInsertUpAB(list,list->head,list->preInsert,p);
+				_list_real_insert_up_a2b(list,list->head,list->preInsert,p);
 			}else{
-				_listRealInsertDwonAB(list,list->head,list->preInsert,p);
+				_list_real_insert_down_a2b(list,list->head,list->preInsert,p);
 			}
 		}else{
 			unsigned t = list->tail->ety.timeout + list->preInsert->ety.timeout;
 			if(timeout <= t/2){
-				_listRealInsertUpAB(list,list->preInsert,list->tail,p);
+				_list_real_insert_up_a2b(list,list->preInsert,list->tail,p);
 			}else{
-				_listRealInsertDwonAB(list,list->preInsert,list->tail,p);
+				_list_real_insert_down_a2b(list,list->preInsert,list->tail,p);
 			}
 		}
 	}else{
@@ -145,9 +145,9 @@ _listInsert(struct _List *list,unsigned key,struct UserData data,unsigned timeou
 	return p;
 }
 static void 
-_listRealInsertUpAB(struct _List *list,struct _ListItem *A,struct _ListItem *B,struct _ListItem*item)
+_list_real_insert_up_a2b(struct _list *list,struct _list_item *A,struct _list_item *B,struct _list_item*item)
 {
-	struct _ListItem *cut = A;
+	struct _list_item *cut = A;
 	do{
 		//optimize 1 cpu idle case itemptr to array 2binary search timeout average chose tial or head
 		if(cut->ety.timeout >= item->ety.timeout){
@@ -171,9 +171,9 @@ _listRealInsertUpAB(struct _List *list,struct _ListItem *A,struct _ListItem *B,s
 	}while(cut != B->next);
 }
 static void 
-_listRealInsertDwonAB(struct _List *list,struct _ListItem *A,struct _ListItem *B,struct _ListItem*item)
+_list_real_insert_down_a2b(struct _list *list,struct _list_item *A,struct _list_item *B,struct _list_item*item)
 {
-	struct _ListItem *cut = B;
+	struct _list_item *cut = B;
 	do{
 		//optimize 1 cpu idle case itemptr to array 2binary search timeout average chose tial or head
 		if(cut->ety.timeout <= item->ety.timeout){
@@ -249,7 +249,7 @@ _listRealInsertFromTail(struct _List *list,struct _ListItem*item)
 	}
 }*/
 static void
-_listRemove(struct _List *list,struct _ListItem * litem)
+_list_remove(struct _list *list,struct _list_item * litem)
 {
 	int a = 0;
 	if(litem->pre){
@@ -273,12 +273,12 @@ _listRemove(struct _List *list,struct _ListItem * litem)
 
 //
 static int
-_listOnTimer(struct _List *list,unsigned times,remove_cb cb,void *cbarg)
+_list_on_timer(struct _list *list,unsigned times,remove_cb cb,void *cbarg)
 {
 	int num = 0;
 	if( list->head){
 		while( list->head->ety.timeout <= times ){
-			struct _ListItem *tmp = list->head;
+			struct _list_item *tmp = list->head;
 			list->head = tmp->next;
 			cb(cbarg,tmp->ety);
 			free(tmp);
